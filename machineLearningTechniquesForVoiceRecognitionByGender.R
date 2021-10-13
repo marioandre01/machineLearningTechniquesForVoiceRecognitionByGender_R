@@ -112,6 +112,7 @@ install.packages('kknn')
 install.packages('klaR')
 install.packages('naivebayes')
 install.packages('C50')
+install.packages("hms")
 
 
 # ********** importing libraries ********** # 
@@ -120,6 +121,7 @@ library(corrplot)       # corrplot.mixed
 library(tidyverse)      # theme_set(), ggplot()
 library(caret)          # createDataPartition(), trainControl(), train()
 library(dplyr)          # select()
+library(hms)            # Formatar valores de hora do dia (00:00:00), com base na classe 'difftime'
 
 #library(e1071)         # train(method="nnet") Nao precisa carrega-lo
 #library(RSNNS)         # train(method="mlp")  Nao precisa carrega-lo
@@ -189,92 +191,14 @@ joinPathAndFilename  <- function(filePath, filename){
   return(str_c(filePath, filename))
 }
 
-# Funcao que determina o caminho a ser salvo o arquivo "acuraciaDadosTreino.csv" com base no sistema operacional que o R está rodando
-acuraciaDadosTreino <- function(filePath, operationalSystem){
+runtime  <- function(endTime, startTime){
   
-  fileName <- "acuraciaDadosTreino.csv"
+  runtimeFormated <- as_hms(endTime - startTime)
   
-  # se operationalSystem for igual a "windows" representa windows senão for representa linux
-  if(operationalSystem == "windows"){
-    pathAndFilename <- str_c(filePath, fileName)
-  }else{
-    pathAndFilename <- str_c(filePath, fileName)
-  }
+  runtimeFormatedAndRound <- round_hms(runtimeFormated, sec = 1)
   
-  return(pathAndFilename)
+  return(runtimeFormatedAndRound)
 }
-
-
-# Funcao que determina o caminho a ser salvo o arquivo "accuracyOfTrainingDataTechniquesTreino.csv" com base no sistema operacional que o R está rodando
-accuracyOfTrainingDataTechniquesTreino <- function(filePath, operationalSystem){
-  
-  fileName <- "accuracyOfTrainingDataTechniquesTreino.csv"
-  
-  if(operationalSystem == "windows"){
-    pathAndFilename <- str_c(filePath, fileName)
-  }else{
-    pathAndFilename <- str_c(filePath, fileName)
-  }
-  
-  return(pathAndFilename)
-}
-  
-# Funcao que determina o caminho a ser salvo o arquivo "resultadoPredicao.csv" com base no sistema operacional que o R está rodando
-resultadoPredicao <- function(filePath, operationalSystem){
-    
-    fileName <- "resultadoPredicao.csv"
-    
-    if(operationalSystem == "windows"){
-      pathAndFilename <- str_c(filePath, fileName)
-    }else{
-      pathAndFilename <- str_c(filePath, fileName)
-    }
-    
-    return(pathAndFilename)
-}
-
-# Funcao que determina o caminho a ser salvo o arquivo "resultadoPredicaoProb.csv" com base no sistema operacional que o R está rodando
-resultadoPredicaoProb <- function(filePath, operationalSystem){
-  
-  fileName <- "resultadoPredicaoProb.csv"
-  
-  if(operationalSystem == "windows"){
-    pathAndFilename <- str_c(filePath, fileName)
-  }else{
-    pathAndFilename <- str_c(filePath, fileName)
-  }
-  
-  return(pathAndFilename)
-}
-
-# Funcao que determina o caminho a ser salvo o arquivo "resultadoMatrizConfusaoPredicao.csv" com base no sistema operacional que o R está rodando
-resultadoMatrizConfusaoPredicao <- function(filePath, operationalSystem){
-  
-  fileName <- "resultadoMatrizConfusaoPredicao.csv"
-  
-  if(operationalSystem == "windows"){
-    pathAndFilename <- str_c(filePath, fileName)
-  }else{
-    pathAndFilename <- str_c(filePath, fileName)
-  }
-  
-  return(pathAndFilename)
-}
-
-# Funcao que determina o caminho a ser salvo o arquivo "resultadoMatrizConfusaoEstatist.csv" com base no sistema operacional que o R está rodando
-resultadoMatrizConfusaoEstatist <- function(filePath, operationalSystem){
-  
-  fileName <- "resultadoMatrizConfusaoEstatist.csv"
-  
-  if(operationalSystem == "windows"){
-    pathAndFilename <- str_c(filePath, fileName)
-  }else{
-    pathAndFilename <- str_c(filePath, fileName)
-  }
-  
-  return(pathAndFilename)
-}
-  
 
 # ********** Dataset ********** #
 
@@ -290,7 +214,7 @@ pathToSaveFile <- "unknown"
 # No windows o caminho padrão é "C:/Users/name_User/Documents"
 getwd()
 
-# Verifica o sistema operacional que o R está instalado, para definir as variaveis pathToSaveFile e sistema
+# Verifica o sistema operacional que o R está instalado, para definir as variaveis pathToSaveFile e o sistema operacional
 if(.Platform$OS.type == "windows"){
   
   pathToSaveFile <- "C:/Users/MarioAndre/Documents/"
@@ -414,11 +338,12 @@ set.seed(seed)
 #-----------------------------------------------------------------------------------------------
 dataDivisionMethod <- "createDP"
 
+# Gerando valores de indices com 80% das amostras do dataset, os valores são aleatorios
 trainingDataIndex  <- createDataPartition(dfGenderVoice$label, p=0.8, list=FALSE)
 
 # Dividindo dados para treino e para teste
 
-# pega todas as linhas que está definida em "trainingDataIndex"
+# pega todas as linhas que está definida em "trainingDataIndex", as amostras serão selecionas pelos indices passados
 trainingData <- dfGenderVoice[ trainingDataIndex, ]
 
 
@@ -490,6 +415,7 @@ testDataLabelColumn <- testData$label
 
 #-----------------------------------------------------------------------------------------------
 
+
   
 # ********** Criando modelos de machine learning ********** #
 
@@ -505,59 +431,153 @@ fitControl <- trainControl(method = "repeatedcv", number = 10, repeats = 3, save
 ## Criando modelo de treinamento com tecnicas de machine learning ##
 
 #-------------------- RNA --------------------#
-model_rna1 <- train(label ~ ., data=trainingData, method="nnet", trControl=fitControl, metric=metric, preProcess=c("center","scale"))
+startTimeRna1 <- Sys.time()
+modelRna1 <- train(label ~ ., data=trainingData, method="nnet", trControl=fitControl, metric=metric, preProcess=c("center","scale"))
+endTimeRna1 <- Sys.time()
 
-model_rna2 <- train(label ~ ., data=trainingData, method="mlp", trControl=fitControl, metric=metric,  preProcess=c("center","scale"))
+runtimeTrainingModelRna1 <- runtime(endTimeRna1, startTimeRna1)
+runtimeTrainingModelRna1
 
-model_rna3 <- train(label ~ ., data=trainingData, method="mlpML", trControl=fitControl, metric=metric, preProcess=c("center","scale"))
+startTimeRna2 <- Sys.time()
+modelRna2 <- train(label ~ ., data=trainingData, method="mlp", trControl=fitControl, metric=metric,  preProcess=c("center","scale"))
+endTimeRna2 <- Sys.time()
+
+runtimeTrainingModelRna2 <- runtime(endTimeRna2, startTimeRna2)
+runtimeTrainingModelRna2
+
+startTimeRna3 <- Sys.time()
+modelRna3 <- train(label ~ ., data=trainingData, method="mlpML", trControl=fitControl, metric=metric, preProcess=c("center","scale"))
+endTimeRna3 <- Sys.time()
+
+runtimeTrainingModelRna3 <- runtime(endTimeRna3, startTimeRna3)
+runtimeTrainingModelRna3
 
 #-------------------- SVM --------------------#
-model_svm1 <- train(label ~ ., data=trainingData, method="svmRadial", trControl=fitControl, metric=metric, preProc=c("center", "scale"),  fit=FALSE)
+startTimeSvm1 <- Sys.time()
+modelSvm1 <- train(label ~ ., data=trainingData, method="svmRadial", trControl=fitControl, metric=metric, preProc=c("center", "scale"),  fit=FALSE)
+endTimeSvm1 <- Sys.time()
 
-model_svm2 <- train(label ~ ., data=trainingData, method="svmRadialWeights", trControl=fitControl, metric=metric, preProc=c("center", "scale"),  fit=FALSE)
+runtimeTrainingModelSvm1 <- runtime(endTimeSvm1, startTimeSvm1)
+runtimeTrainingModelSvm1
 
-model_svm3 <- train(label ~ ., data=trainingData, method="svmPoly", trControl=fitControl, metric=metric, preProc=c("center", "scale"),  fit=FALSE)
+startTimeSvm2 <- Sys.time()
+modelSvm2 <- train(label ~ ., data=trainingData, method="svmRadialWeights", trControl=fitControl, metric=metric, preProc=c("center", "scale"),  fit=FALSE)
+endTimeSvm2 <- Sys.time()
+
+runtimeTrainingModelSvm2 <- runtime(endTimeSvm2, startTimeSvm2)
+runtimeTrainingModelSvm2
+
+startTimeSvm3 <- Sys.time()
+modelSvm3 <- train(label ~ ., data=trainingData, method="svmPoly", trControl=fitControl, metric=metric, preProc=c("center", "scale"),  fit=FALSE)
+endTimeSvm3 <- Sys.time()
+
+runtimeTrainingModelSvm3 <- runtime(endTimeSvm3, startTimeSvm3)
+runtimeTrainingModelSvm3
 
 #-------------------- RPART - Recursive Partitioning And Regression Trees --------------------#
-model_cart1 <- train(label ~ ., data=trainingData, method="rpart", trControl=fitControl, metric=metric)
+startTimeCart1 <- Sys.time()
+modelCart1 <- train(label ~ ., data=trainingData, method="rpart", trControl=fitControl, metric=metric)
+endTimeCart1 <- Sys.time()
 
-model_cart2 <- train(label ~ ., data=trainingData, method="rpart1SE", trControl=fitControl, metric=metric)
+runtimeTrainingModelCart1 <- runtime(endTimeCart1, startTimeCart1)
+runtimeTrainingModelCart1
 
-model_cart3 <- train(label ~ ., data=trainingData, method="rpart2", trControl=fitControl, metric=metric)
+startTimeCart2 <- Sys.time()
+modelCart2 <- train(label ~ ., data=trainingData, method="rpart1SE", trControl=fitControl, metric=metric)
+endTimeCart2 <- Sys.time()
 
-#-------------------- C5.0 Decision Trees --------------------#
-model_c50_1 <- train(label ~ ., data=trainingData, method="C5.0", trControl=fitControl, metric=metric)
+runtimeTrainingModelCart2 <- runtime(endTimeCart2, startTimeCart2)
+runtimeTrainingModelCart2
 
-model_c50_2<- train(label ~ ., data=trainingData, method="C5.0Rules", trControl=fitControl, metric=metric)
+startTimeCart3 <- Sys.time()
+modelCart3 <- train(label ~ ., data=trainingData, method="rpart2", trControl=fitControl, metric=metric)
+endTimeCart3 <- Sys.time()
 
-model_c50_3 <- train(label ~ ., data=trainingData, method="C5.0Tree", trControl=fitControl, metric=metric)
+runtimeTrainingModelCart3 <- runtime(endTimeCart3, startTimeCart3)
+runtimeTrainingModelCart3
+
+#-------------------- Decision Trees --------------------#
+startTimeC5_0_1 <- Sys.time()
+modelC5_0_1 <- train(label ~ ., data=trainingData, method="C5.0", trControl=fitControl, metric=metric)
+endTimeC5_0_1 <- Sys.time()
+
+runtimeTrainingModelC5_0_1 <- runtime(endTimeC5_0_1, startTimeC5_0_1)
+runtimeTrainingModelC5_0_1
+
+startTimeC5_0_2 <- Sys.time()
+modelC5_0_2<- train(label ~ ., data=trainingData, method="C5.0Rules", trControl=fitControl, metric=metric)
+endTimeC5_0_2 <- Sys.time()
+
+runtimeTrainingModelC5_0_2 <- runtime(endTimeC5_0_2, startTimeC5_0_2)
+runtimeTrainingModelC5_0_2
+
+startTimeC5_0_3 <- Sys.time()
+modelC5_0_3 <- train(label ~ ., data=trainingData, method="C5.0Tree", trControl=fitControl, metric=metric)
+endTimeC5_0_3 <- Sys.time()
+
+runtimeTrainingModelC5_0_3 <- runtime(endTimeC5_0_3, startTimeC5_0_3)
+runtimeTrainingModelC5_0_3
 
 #-------------------- RANDOM FOREST --------------------#
-model_rf1 <- train(label ~ ., data=trainingData, method="rf", trControl=fitControl, metric=metric)
+startTimeRandomForest1 <- Sys.time()
+modelRandomForest1 <- train(label ~ ., data=trainingData, method="rf", trControl=fitControl, metric=metric)
+endTimeRandomForest1 <- Sys.time()
 
-model_rf2 <- train(label ~ ., data=trainingData, method="cforest", trControl=fitControl, metric=metric)
+runtimeTrainingModelRandomForest1 <- runtime(endTimeRandomForest1, startTimeRandomForest1)
+runtimeTrainingModelRandomForest1
 
-model_rf3 <- train(label ~ ., data=trainingData, method="parRF", trControl=fitControl, metric=metric)
+startTimeRandomForest2 <- Sys.time()
+modelRandomForest2 <- train(label ~ ., data=trainingData, method="cforest", trControl=fitControl, metric=metric)
+endTimeRandomForest2 <- Sys.time()
+
+runtimeTrainingModelRandomForest2 <- runtime(endTimeRandomForest2, startTimeRandomForest2)
+runtimeTrainingModelRandomForest2
+
+startTimeRandomForest3 <- Sys.time()
+modelRandomForest3 <- train(label ~ ., data=trainingData, method="parRF", trControl=fitControl, metric=metric)
+endTimeRandomForest3 <- Sys.time()
+
+runtimeTrainingModelRandomForest3 <- runtime(endTimeRandomForest3, startTimeRandomForest3)
+runtimeTrainingModelRandomForest3
 
 #-------------------- KNN --------------------#
-model_knn1 <- train(label ~ ., data=trainingData, method="knn", trControl=fitControl, metric=metric, preProc=c("center", "scale"))
+startTimeKnn1 <- Sys.time()
+modelKnn1 <- train(label ~ ., data=trainingData, method="knn", trControl=fitControl, metric=metric, preProc=c("center", "scale"))
+endTimeKnn1 <- Sys.time()
 
-model_knn2 <- train(label ~ ., data=trainingData, method="kknn", trControl=fitControl, metric=metric, preProc=c("center", "scale"))
+runtimeTrainingModelKnn1 <- runtime(endTimeKnn1, startTimeKnn1)
+runtimeTrainingModelKnn1
+
+startTimeKnn2 <- Sys.time()
+modelKnn2 <- train(label ~ ., data=trainingData, method="kknn", trControl=fitControl, metric=metric, preProc=c("center", "scale"))
+endTimeKnn2 <- Sys.time()
+
+runtimeTrainingModelKnn2 <- runtime(endTimeKnn2, startTimeKnn2)
+runtimeTrainingModelKnn2
 
 #-------------------- NAIVE BAYES --------------------#
-model_nbayes1 <- train(label ~ ., data=trainingData, method="nb", trControl=fitControl, metric=metric, preProcess=c("center","scale"))
+startTimeNaiveBayes1 <- Sys.time()
+modelNaiveBayes1 <- train(label ~ ., data=trainingData, method="nb", trControl=fitControl, metric=metric, preProcess=c("center","scale"))
+endTimeNaiveBayes1 <- Sys.time()
 
-model_nbayes2 <- train(label ~ ., data=trainingData, method="naive_bayes", trControl=fitControl, metric=metric, preProcess=c("center","scale"))
+runtimeTrainingModelNaiveBayes1 <- runtime(endTimeNaiveBayes1, startTimeNaiveBayes1)
+runtimeTrainingModelNaiveBayes1
 
+startTimeNaiveBayes2 <- Sys.time()
+modelNaiveBayes2 <- train(label ~ ., data=trainingData, method="naive_bayes", trControl=fitControl, metric=metric, preProcess=c("center","scale"))
+endTimeNaiveBayes2 <- Sys.time()
+
+runtimeTrainingModelNaiveBayes2 <- runtime(endTimeNaiveBayes2, startTimeNaiveBayes2)
+runtimeTrainingModelNaiveBayes2
 
 # Resultados dos treinos 
-results <- resamples(list("RNA 1"=model_rna1, "RNA 2"=model_rna2, "RNA 3"=model_rna3, 
-                          "SVM 1"=model_svm1,"SVM 2"=model_svm2, "SVM 3"= model_svm3,
-                          "CART 1"=model_cart1, "CART 2"=model_cart2, "CART 3"=model_cart3, 
-                          "C5.0 1"=model_c50_1, "C5.0 2"=model_c50_2, "C5.0 3"=model_c50_3,
-                          "Random Forest 1"=model_rf1,"Random Forest 2"=model_rf2, "Random Forest 3"=model_rf3,
-                          "k-NN 1"=model_knn1, "k-NN 2"=model_knn2, 
-                          "Naive Bayes 1"=model_nbayes1, "Naive Bayes 2"=model_nbayes2
+results <- resamples(list("RNA 1 (nnet)"=modelRna1, "RNA 2 (mlp)"=modelRna2, "RNA 3 (mlpML)"=modelRna3, 
+                          "SVM 1 (svmRadial)"=modelSvm1,"SVM 2 (svmRadialWeights)"=modelSvm2, "SVM 3 (svmPoly)"= modelSvm3,
+                          "CART 1 (rpart)"=modelCart1, "CART 2 (rpart1SE)"=modelCart2, "CART 3 (rpart2)"=modelCart3, 
+                          "Decision Trees 1 (C5.0)"=modelC5_0_1, "Decision Trees 1 (C5.0Rules)"=modelC5_0_2, "Decision Trees 1 (C5.0Tree)"=modelC5_0_3,
+                          "Random Forest 1 (rf)"=modelRandomForest1,"Random Forest 2 (cforest)"=modelRandomForest2, "Random Forest 3 (parRF)"=modelRandomForest3,
+                          "k-NN 1 (knn)"=modelKnn1, "k-NN 2 (kknn)"=modelKnn2, 
+                          "Naive Bayes 1 (nb)"=modelNaiveBayes1, "Naive Bayes 2 (naive_bayes)"=modelNaiveBayes2
                           )) 
 
 
@@ -573,20 +593,31 @@ accuracyOfTrainingDataTechniques <- resultOfTrainingDataTechniques$statistics$Ac
 
 # Criando um dataframe com a matriz accuracyOfTrainingDataTechniques
 dfAccuracyOfTrainingDataTechniques <- data.frame(accuracyOfTrainingDataTechniques)
-
+View(dfAccuracyOfTrainingDataTechniques)
 # Criando novas colunas no dataframe
 dfAccuracyOfTrainingDataTechniques$Technique <- rownames(dfAccuracyOfTrainingDataTechniques)
-dfAccuracyOfTrainingDataTechniques$semente <- seed
-dfAccuracyOfTrainingDataTechniques$Amostras <- nrow(dfGenderVoice)
-dfAccuracyOfTrainingDataTechniques$Amostras_Male <- numberOfMaleClassSamples
-dfAccuracyOfTrainingDataTechniques$Amostras_Female <- numberOfFemaleClassSamples
-dfAccuracyOfTrainingDataTechniques$Metodo_divisao_Dados <- dataDivisionMethod
-dfAccuracyOfTrainingDataTechniques$Amostras_Treino_80p <- nrow(trainingData)
-dfAccuracyOfTrainingDataTechniques$Amostras_Treino_Male <- numberOfSamplesMaleTrainingData
-dfAccuracyOfTrainingDataTechniques$Amostras_Treino_Female <- numberOfSamplesFemaleTrainingData
-dfAccuracyOfTrainingDataTechniques$Amostras_Teste_20p <- nrow(testData)
-dfAccuracyOfTrainingDataTechniques$Amostras_Teste_Male <- numberOfSamplesMaleTestData
-dfAccuracyOfTrainingDataTechniques$Amostras_Teste_Female <- numberOfSamplesFemaleTestData
+dfAccuracyOfTrainingDataTechniques$Runtime_Training <- rbind(as.character(runtimeTrainingModelRna1), as.character(runtimeTrainingModelRna2), 
+                                                             as.character(runtimeTrainingModelRna3), as.character(runtimeTrainingModelSvm1), 
+                                                             as.character(runtimeTrainingModelSvm2), as.character(runtimeTrainingModelSvm3), 
+                                                             as.character(runtimeTrainingModelCart1), as.character(runtimeTrainingModelCart2),
+                                                             as.character(runtimeTrainingModelCart3), as.character(runtimeTrainingModelC5_0_1), 
+                                                             as.character(runtimeTrainingModelC5_0_2), as.character(runtimeTrainingModelC5_0_3), 
+                                                             as.character(runtimeTrainingModelRandomForest1), as.character(runtimeTrainingModelRandomForest2),
+                                                             as.character(runtimeTrainingModelRandomForest3), as.character(runtimeTrainingModelKnn1), 
+                                                             as.character(runtimeTrainingModelKnn2), as.character(runtimeTrainingModelNaiveBayes1), 
+                                                             as.character(runtimeTrainingModelNaiveBayes2))
+dfAccuracyOfTrainingDataTechniques$Seed <- seed
+dfAccuracyOfTrainingDataTechniques$Samples <- nrow(dfGenderVoice)
+dfAccuracyOfTrainingDataTechniques$Female_samples <- numberOfFemaleClassSamples
+dfAccuracyOfTrainingDataTechniques$Male_samples <- numberOfMaleClassSamples
+dfAccuracyOfTrainingDataTechniques$Data_division_method <- dataDivisionMethod
+dfAccuracyOfTrainingDataTechniques$Training_samples_80p <- nrow(trainingData)
+dfAccuracyOfTrainingDataTechniques$Training_samples_Female <- numberOfSamplesFemaleTrainingData
+dfAccuracyOfTrainingDataTechniques$Training_samples_Male <- numberOfSamplesMaleTrainingData
+dfAccuracyOfTrainingDataTechniques$Test_samples_20p <- nrow(testData)
+dfAccuracyOfTrainingDataTechniques$Test_samples_Female <- numberOfSamplesFemaleTestData
+dfAccuracyOfTrainingDataTechniques$Test_samples_Male <- numberOfSamplesMaleTestData
+dfAccuracyOfTrainingDataTechniques$Operational_System <- operationalSystem
 
 # Mudando o nome das linhas do data frame, tira o nome das tecnicas e coloca o numero da linha
 rownames(dfAccuracyOfTrainingDataTechniques) <- 1:nrow(dfAccuracyOfTrainingDataTechniques)
@@ -633,7 +664,7 @@ dfCartAccuracyOfTrainingData <- dfAccuracyOfTrainingDataTechniquesNew %>% filter
 dfCartAccuracyOfTrainingData <- dfCartAccuracyOfTrainingData[order(dfCartAccuracyOfTrainingData$Mean, decreasing=TRUE), ]
 # view(dfCartAccuracyOfTrainingData)
 
-dfC5AccuracyOfTrainingData <- dfAccuracyOfTrainingDataTechniquesNew %>% filter(str_detect(Technique, "^C5"))
+dfC5AccuracyOfTrainingData <- dfAccuracyOfTrainingDataTechniquesNew %>% filter(str_detect(Technique, "^Decision"))
 dfC5AccuracyOfTrainingData <- dfC5AccuracyOfTrainingData[order(dfC5AccuracyOfTrainingData$Mean, decreasing=TRUE), ]
 #view(dfC5AccuracyOfTrainingData)
 
@@ -695,392 +726,399 @@ View(dfBestTechniqueAccuracyOfTrainingDataView)
 # Pegando a melhor tecnica de RNA, pega a linha da coluna "tecnica" que comeca com "RNA"
 bestTechniqueRna <- dfBestTechniqueAccuracyOfTrainingData %>% filter(str_detect(Technique, "^RNA"))
 
-if (bestTechniqueRna[1] == "RNA 1") {
+if (bestTechniqueRna[1] == "RNA 1 (nnet)") {
   
-  bestRna <- "RNA 1"
-  model_rna1
-  model_rna1$results
+  bestRna <- "RNA 1 (nnet)"
+  modelRna1
+  modelRna1$results
   
   # Realizando a predicao com os dados de teste sem a coluna label
-  predictionRna <- predict(model_rna1, testDataWithoutLabelColumn)
+  predictionRna <- predict(modelRna1, testDataWithoutLabelColumn)
 
   # Comparando os resultados da predicao com os resultados da coluna label dos dados de teste
-  resulteHitsAndMissesPredictionRna <- table(Predictions = predictionRna, Test_data_label_column = testDataLabelColumn)
-  resulteHitsAndMissesPredictionRna
+  confusionMatrixPredictionRnaWithTable <- table(Reference = testDataLabelColumn, Predictions = predictionRna)
+  confusionMatrixPredictionRnaWithTable
   
+
   # Pegando a probabilidade do numero de acertos(acuracia) e erros da predicao
-  accuracyHitsAndMissesPredictionRna <- prop.table(table(predictionRna == testDataLabelColumn))
-  accuracyHitsAndMissesPredictionRna
+  accuracyAndErrorRatePredictionRna <- prop.table(table(predictionRna == testDataLabelColumn))
+  accuracyAndErrorRatePredictionRna
 
   
-} else if (bestTechniqueRna[1] == "RNA 2") {
+} else if (bestTechniqueRna[1] == "RNA 2 (mlp)") {
   
-  bestRna <- "RNA 2"
-  model_rna2
-  model_rna2$results
+  bestRna <- "RNA 2 (mlp)"
+  modelRna2
+  modelRna2$results
   
-  predictionRna <- predict(model_rna2, testDataWithoutLabelColumn)
+  predictionRna <- predict(modelRna2, testDataWithoutLabelColumn)
   
-  resulteHitsAndMissesPredictionRna <- table(Predictions = predictionRna, Test_data_label_column = testDataLabelColumn)
-  resulteHitsAndMissesPredictionRna
+  confusionMatrixPredictionRnaWithTable <- table(Predictions = predictionRna, Reference = testDataLabelColumn)
+  confusionMatrixPredictionRnaWithTable
   
-  accuracyHitsAndMissesPredictionRna <- prop.table(table(predictionRna == testDataLabelColumn))
-  accuracyHitsAndMissesPredictionRna
+  accuracyAndErrorRatePredictionRna <- prop.table(table(predictionRna == testDataLabelColumn))
+  accuracyAndErrorRatePredictionRna
   
 } else {
   
-  bestRna <- "RNA 3"
-  model_rna3
-  model_rna3$results
+  bestRna <- "RNA 3 (mlpML)"
+  modelRna3
+  modelRna3$results
   
-  predictionRna <- predict(model_rna3, testDataWithoutLabelColumn)
+  predictionRna <- predict(modelRna3, testDataWithoutLabelColumn)
   
-  resulteHitsAndMissesPredictionRna <- table(Predictions = predictionRna, Test_data_label_column = testDataLabelColumn)
-  resulteHitsAndMissesPredictionRna
+  confusionMatrixPredictionRnaWithTable <- table(Predictions = predictionRna, Reference = testDataLabelColumn)
+  confusionMatrixPredictionRnaWithTable
   
-  accuracyHitsAndMissesPredictionRna <- prop.table(table(predictionRna == testDataLabelColumn))
-  accuracyHitsAndMissesPredictionRna
+  accuracyAndErrorRatePredictionRna <- prop.table(table(predictionRna == testDataLabelColumn))
+  accuracyAndErrorRatePredictionRna
   
 }
 
-# preparando os dados de "resulteHitsAndMissesPredictionRna" para o arquivo .csv
+# preparando os dados de "confusionMatrixPredictionRnaWithTable" para o arquivo .csv
 #--------------------------------
-dfResulteHitsAndMissesPredictionRna <- data.frame(resulteHitsAndMissesPredictionRna)
-dfResulteHitsAndMissesPredictionRna$Technique <-  bestRna
-dfResulteHitsAndMissesPredictionRna$Mean <- dfRnaAccuracyOfTrainingData$Mean[1]
+dfconfusionMatrixPredictionRnaWithTable <- data.frame(confusionMatrixPredictionRnaWithTable)
+dfconfusionMatrixPredictionRnaWithTable$value_counts <- rbind("True Negative", "False Positive", "False Negative", "True Positive")
+dfconfusionMatrixPredictionRnaWithTable$Technique <-  bestRna
+dfconfusionMatrixPredictionRnaWithTable$Mean <- dfRnaAccuracyOfTrainingData$Mean[1]
 #--------------------------------
-View(dfResulteHitsAndMissesPredictionRna)
-# preparando os dados de "accuracyHitsAndMissesPredictionRna" para o arquivo .csv
+View(dfconfusionMatrixPredictionRnaWithTable)
+# preparando os dados de "accuracyAndErrorRatePredictionRna" para o arquivo .csv
 #------------------------------------------------
-dfAccuracyHitsAndMissesPredictionRnaTemp <- data.frame(accuracyHitsAndMissesPredictionRna)
+dfaccuracyAndErrorRatePredictionRnaTemp <- data.frame(accuracyAndErrorRatePredictionRna)
 
-dfAccuracyHitsAndMissesPredictionRna <- data.frame("Errors"=dfAccuracyHitsAndMissesPredictionRnaTemp$Freq[1], "Test_data_accuracy"=dfAccuracyHitsAndMissesPredictionRnaTemp$Freq[2])
-dfAccuracyHitsAndMissesPredictionRna$Training_data_accuracy <- dfRnaAccuracyOfTrainingData$Mean[1]
-dfAccuracyHitsAndMissesPredictionRna$Technique <- bestRna
+dfaccuracyAndErrorRatePredictionRna <- data.frame("Error_rate"=dfaccuracyAndErrorRatePredictionRnaTemp$Freq[1], "Test_data_accuracy"=dfaccuracyAndErrorRatePredictionRnaTemp$Freq[2])
+dfaccuracyAndErrorRatePredictionRna$Training_data_accuracy <- dfRnaAccuracyOfTrainingData$Mean[1]
+dfaccuracyAndErrorRatePredictionRna$Technique <- bestRna
 #-----------------------------------------------------
-View(dfAccuracyHitsAndMissesPredictionRna)
+View(dfaccuracyAndErrorRatePredictionRna)
 
 
 #-------------------- SVM --------------------#
 
 bestTechniqueSvm <- dfBestTechniqueAccuracyOfTrainingData %>% filter(str_detect(Technique, "^SVM"))
 
-if (bestTechniqueSvm[1] == "SVM 1") {
+if (bestTechniqueSvm[1] == "SVM 1 (svmRadial)") {
   
-  bestSvm <- "SVM 1"
-  model_svm1
-  model_svm1$results
+  bestSvm <- "SVM 1 (svmRadial)"
+  modelSvm1
+  modelSvm1$results
   
-  predictionSvm <- predict(model_svm1, testDataWithoutLabelColumn)
+  predictionSvm <- predict(modelSvm1, testDataWithoutLabelColumn)
   
-  resulteHitsAndMissesPredictionSvm <- table(Predictions = predictionSvm, Test_data_label_column = testDataLabelColumn)
-  resulteHitsAndMissesPredictionSvm
+  confusionMatrixPredictionSvmWithTable <- table(Predictions = predictionSvm, Reference = testDataLabelColumn)
+  confusionMatrixPredictionSvmWithTable
   
-  accuracyHitsAndMissesPredictionSvm <- prop.table(table(predictionSvm == testDataLabelColumn))
-  accuracyHitsAndMissesPredictionSvm
+  accuracyAndErrorRatePredictionSvm <- prop.table(table(predictionSvm == testDataLabelColumn))
+  accuracyAndErrorRatePredictionSvm
   
   
-} else if (bestTechniqueSvm[1] == "SVM 2") {
+} else if (bestTechniqueSvm[1] == "SVM 2 (svmRadialWeights)") {
   
-  bestSvm <- "SVM 2"
-  model_svm2
-  model_svm2$results
+  bestSvm <- "SVM 2 (svmRadialWeights)"
+  modelSvm2
+  modelSvm2$results
   
-  predictionSvm <- predict(model_svm2, testDataWithoutLabelColumn)
+  predictionSvm <- predict(modelSvm2, testDataWithoutLabelColumn)
   
-  resulteHitsAndMissesPredictionSvm <- table(Predictions = predictionSvm, Test_data_label_column = testDataLabelColumn)
-  resulteHitsAndMissesPredictionSvm
+  confusionMatrixPredictionSvmWithTable <- table(Predictions = predictionSvm, Reference = testDataLabelColumn)
+  confusionMatrixPredictionSvmWithTable
   
-  accuracyHitsAndMissesPredictionSvm <- prop.table(table(predictionSvm == testDataLabelColumn))
-  accuracyHitsAndMissesPredictionSvm
+  accuracyAndErrorRatePredictionSvm <- prop.table(table(predictionSvm == testDataLabelColumn))
+  accuracyAndErrorRatePredictionSvm
   
 } else {
   
-  bestSvm <- "SVM 3"
-  model_svm3
-  model_svm3$results
+  bestSvm <- "SVM 3 (svmPoly)"
+  modelSvm3
+  modelSvm3$results
   
-  predictionSvm <- predict(model_svm3, testDataWithoutLabelColumn)
+  predictionSvm <- predict(modelSvm3, testDataWithoutLabelColumn)
   
-  resulteHitsAndMissesPredictionSvm <- table(Predictions = predictionSvm, Test_data_label_column = testDataLabelColumn)
-  resulteHitsAndMissesPredictionSvm
+  confusionMatrixPredictionSvmWithTable <- table(Predictions = predictionSvm, Reference = testDataLabelColumn)
+  confusionMatrixPredictionSvmWithTable
   
-  accuracyHitsAndMissesPredictionSvm <- prop.table(table(predictionSvm == testDataLabelColumn))
-  accuracyHitsAndMissesPredictionSvm
+  accuracyAndErrorRatePredictionSvm <- prop.table(table(predictionSvm == testDataLabelColumn))
+  accuracyAndErrorRatePredictionSvm
   
 }
 
-# # preparando os dados de "resulteHitsAndMissesPredictionSvm" para o arquivo .csv
+# # preparando os dados de "confusionMatrixPredictionSvmWithTable" para o arquivo .csv
 #--------------------------------
-dfResulteHitsAndMissesPredictionSvm <- data.frame(resulteHitsAndMissesPredictionSvm)
-dfResulteHitsAndMissesPredictionSvm$Technique <- bestSvm
-dfResulteHitsAndMissesPredictionSvm$Mean <- dfSvmAccuracyOfTrainingData$Mean[1]
+dfconfusionMatrixPredictionSvmWithTable <- data.frame(confusionMatrixPredictionSvmWithTable)
+dfconfusionMatrixPredictionSvmWithTable$value_counts <- rbind("True Negative", "False Positive", "False Negative", "True Positive")
+dfconfusionMatrixPredictionSvmWithTable$Technique <- bestSvm
+dfconfusionMatrixPredictionSvmWithTable$Mean <- dfSvmAccuracyOfTrainingData$Mean[1]
 #--------------------------------
-View(dfResulteHitsAndMissesPredictionSvm)
-# # preparando os dados de "accuracyHitsAndMissesPredictionSvm" para o arquivo .csv
+View(dfconfusionMatrixPredictionSvmWithTable)
+# # preparando os dados de "accuracyAndErrorRatePredictionSvm" para o arquivo .csv
 #------------------------------------------------
-dfAccuracyHitsAndMissesPredictionSvmTemp <- data.frame(accuracyHitsAndMissesPredictionSvm)
+dfaccuracyAndErrorRatePredictionSvmTemp <- data.frame(accuracyAndErrorRatePredictionSvm)
 
-dfAccuracyHitsAndMissesPredictionSvm <- data.frame("Errors"=dfAccuracyHitsAndMissesPredictionSvmTemp$Freq[1], "Test_data_accuracy"=dfAccuracyHitsAndMissesPredictionSvmTemp$Freq[2])
-dfAccuracyHitsAndMissesPredictionSvm$Training_data_accuracy <- dfSvmAccuracyOfTrainingData$Mean[1]
-dfAccuracyHitsAndMissesPredictionSvm$Technique <- bestSvm
+dfaccuracyAndErrorRatePredictionSvm <- data.frame("Error_rate"=dfaccuracyAndErrorRatePredictionSvmTemp$Freq[1], "Test_data_accuracy"=dfaccuracyAndErrorRatePredictionSvmTemp$Freq[2])
+dfaccuracyAndErrorRatePredictionSvm$Training_data_accuracy <- dfSvmAccuracyOfTrainingData$Mean[1]
+dfaccuracyAndErrorRatePredictionSvm$Technique <- bestSvm
 #-----------------------------------------------------
-View(dfAccuracyHitsAndMissesPredictionSvm)
+View(dfaccuracyAndErrorRatePredictionSvm)
 
 
 #-------------------- RPART - Recursive Partitioning And Regression Trees--------------------#
 
 bestTechniqueCart <- dfBestTechniqueAccuracyOfTrainingData %>% filter(str_detect(Technique, "^CART"))
 
-if (bestTechniqueCart[1] == "CART 1") {
+if (bestTechniqueCart[1] == "CART 1 (rpart)") {
   
-  bestCart <- "CART 1"
-  model_cart1
-  model_cart1$results
+  bestCart <- "CART 1 (rpart)"
+  modelCart1
+  modelCart1$results
   
-  predictionCart <- predict(model_cart1, testDataWithoutLabelColumn)
+  predictionCart <- predict(modelCart1, testDataWithoutLabelColumn)
   
-  resulteHitsAndMissesPredictionCart <- table(Predictions = predictionCart, Test_data_label_column = testDataLabelColumn)
-  resulteHitsAndMissesPredictionCart
+  confusionMatrixPredictionCartWithTable <- table(Predictions = predictionCart, Reference = testDataLabelColumn)
+  confusionMatrixPredictionCartWithTable
   
-  accuracyHitsAndMissesPredictionCart <- prop.table(table(predictionCart == testDataLabelColumn))
-  accuracyHitsAndMissesPredictionCart
+  accuracyAndErrorRatePredictionCart <- prop.table(table(predictionCart == testDataLabelColumn))
+  accuracyAndErrorRatePredictionCart
   
   
-} else if (bestTechniqueCart[1] == "CART 2") {
+} else if (bestTechniqueCart[1] == "CART 2 (rpart1SE)") {
   
-  bestCart <- "CART 2"
-  model_cart2
-  model_cart2$results
+  bestCart <- "CART 2 (rpart1SE)"
+  modelCart2
+  modelCart2$results
   
-  predictionCart <- predict(model_cart2, testDataWithoutLabelColumn)
+  predictionCart <- predict(modelCart2, testDataWithoutLabelColumn)
   
-  resulteHitsAndMissesPredictionCart <- table(Predictions = predictionCart, Test_data_label_column = testDataLabelColumn)
-  resulteHitsAndMissesPredictionCart
+  confusionMatrixPredictionCartWithTable <- table(Predictions = predictionCart, Reference = testDataLabelColumn)
+  confusionMatrixPredictionCartWithTable
   
-  accuracyHitsAndMissesPredictionCart <- prop.table(table(predictionCart == testDataLabelColumn))
-  accuracyHitsAndMissesPredictionCart
+  accuracyAndErrorRatePredictionCart <- prop.table(table(predictionCart == testDataLabelColumn))
+  accuracyAndErrorRatePredictionCart
   
 } else {
   
-  bestCart <- "CART 3"
-  model_cart3
-  model_cart3$results
+  bestCart <- "CART 3 (rpart2)"
+  modelCart3
+  modelCart3$results
   
-  predictionCart <- predict(model_cart3, testDataWithoutLabelColumn)
+  predictionCart <- predict(modelCart3, testDataWithoutLabelColumn)
   
-  resulteHitsAndMissesPredictionCart <- table(Predictions = predictionCart, Test_data_label_column = testDataLabelColumn)
-  resulteHitsAndMissesPredictionCart
+  confusionMatrixPredictionCartWithTable <- table(Predictions = predictionCart, Reference = testDataLabelColumn)
+  confusionMatrixPredictionCartWithTable
   
-  accuracyHitsAndMissesPredictionCart <- prop.table(table(predictionCart == testDataLabelColumn))
-  accuracyHitsAndMissesPredictionCart
+  accuracyAndErrorRatePredictionCart <- prop.table(table(predictionCart == testDataLabelColumn))
+  accuracyAndErrorRatePredictionCart
   
 }
 
 # preparando dados de predicao cart1 para arquivo .csv
 #--------------------------------
-dfResulteHitsAndMissesPredictionCart <- data.frame(resulteHitsAndMissesPredictionCart)
-dfResulteHitsAndMissesPredictionCart$Technique <- bestCart
-dfResulteHitsAndMissesPredictionCart$Mean <- dfCartAccuracyOfTrainingData$Mean[1]
+dfconfusionMatrixPredictionCartWithTable <- data.frame(confusionMatrixPredictionCartWithTable)
+dfconfusionMatrixPredictionCartWithTable$value_counts <- rbind("True Negative", "False Positive", "False Negative", "True Positive")
+dfconfusionMatrixPredictionCartWithTable$Technique <- bestCart
+dfconfusionMatrixPredictionCartWithTable$Mean <- dfCartAccuracyOfTrainingData$Mean[1]
 #--------------------------------
 
 # preparando dados de probabilidade predicao rna1 para arquivo .csv
 #------------------------------------------------
-dfAccuracyHitsAndMissesPredictionCartTemp <- data.frame(accuracyHitsAndMissesPredictionCart)
+dfaccuracyAndErrorRatePredictionCartTemp <- data.frame(accuracyAndErrorRatePredictionCart)
 
-dfAccuracyHitsAndMissesPredictionCart <- data.frame("Errors"=dfAccuracyHitsAndMissesPredictionCartTemp$Freq[1], "Test_data_accuracy"=dfAccuracyHitsAndMissesPredictionCartTemp$Freq[2])
-dfAccuracyHitsAndMissesPredictionCart$Training_data_accuracy <- dfCartAccuracyOfTrainingData$Mean[1]
-dfAccuracyHitsAndMissesPredictionCart$Technique <- bestCart
+dfaccuracyAndErrorRatePredictionCart <- data.frame("Error_rate"=dfaccuracyAndErrorRatePredictionCartTemp$Freq[1], "Test_data_accuracy"=dfaccuracyAndErrorRatePredictionCartTemp$Freq[2])
+dfaccuracyAndErrorRatePredictionCart$Training_data_accuracy <- dfCartAccuracyOfTrainingData$Mean[1]
+dfaccuracyAndErrorRatePredictionCart$Technique <- bestCart
 #-----------------------------------------------------
 
 
 
 
 
-#-------------------- C5.0 Decision Trees --------------------#
+#-------------------- Decision Trees --------------------#
 
-bestTechniqueC5_0 <- dfBestTechniqueAccuracyOfTrainingData %>% filter(str_detect(Technique, "^C5.0"))
+bestTechniqueDecisionTrees <- dfBestTechniqueAccuracyOfTrainingData %>% filter(str_detect(Technique, "^Decision"))
 
-if (bestTechniqueC5_0[1] == "C5.0 1") {
+if (bestTechniqueDecisionTrees[1] == "Decision Trees 1 (C5.0)") {
   
-  bestC5_0 <- "C5.0 1"
-  model_c50_1
-  model_c50_1$results
+  bestDecisionTrees <- "Decision Trees 1 (C5.0)"
+  modelC5_0_1
+  modelC5_0_1$results
   
-  predictionC5_0 <- predict(model_c50_1, testDataWithoutLabelColumn)
+  predictionC5_0 <- predict(modelC5_0_1, testDataWithoutLabelColumn)
   
-  resulteHitsAndMissesPredictionC5_0 <- table(Predictions = predictionC5_0,  Test_data_label_column = testDataLabelColumn)
-  resulteHitsAndMissesPredictionC5_0
+  confusionMatrixPredictionDecisionTreesWithTable <- table(Predictions = predictionC5_0,  Reference = testDataLabelColumn)
+  confusionMatrixPredictionDecisionTreesWithTable
   
-  accuracyHitsAndMissesPredictionC5_0 <- prop.table(table(predictionC5_0 == testDataLabelColumn))
-  accuracyHitsAndMissesPredictionC5_0
+  accuracyAndErrorRatePredictionDecisionTrees <- prop.table(table(predictionC5_0 == testDataLabelColumn))
+  accuracyAndErrorRatePredictionDecisionTrees
   
   
-} else if (bestTechniqueC5_0[1] == "C5.0 2") {
+} else if (bestTechniqueDecisionTrees[1] == "Decision Trees 1 (C5.0Rules)") {
   
-  bestC5_0 <- "C5.0 2"
-  model_c50_2
-  model_c50_2$results
+  bestDecisionTrees <- "Decision Trees 1 (C5.0Rules)"
+  modelC5_0_2
+  modelC5_0_2$results
   
-  predictionC5_0 <- predict(model_c50_2, testDataWithoutLabelColumn)
+  predictionC5_0 <- predict(modelC5_0_2, testDataWithoutLabelColumn)
   
-  resulteHitsAndMissesPredictionC5_0 <- table(Predictions = predictionC5_0,  Test_data_label_column = testDataLabelColumn)
-  resulteHitsAndMissesPredictionC5_0
+  confusionMatrixPredictionDecisionTreesWithTable <- table(Predictions = predictionC5_0,  Reference = testDataLabelColumn)
+  confusionMatrixPredictionDecisionTreesWithTable
   
-  accuracyHitsAndMissesPredictionC5_0 <- prop.table(table(predictionC5_0 == testDataLabelColumn))
-  accuracyHitsAndMissesPredictionC5_0
+  accuracyAndErrorRatePredictionDecisionTrees <- prop.table(table(predictionC5_0 == testDataLabelColumn))
+  accuracyAndErrorRatePredictionDecisionTrees
   
 } else {
   
-  bestC5_0 <- "C5.0 3"
-  model_c50_3
-  model_c50_3$results
+  bestDecisionTrees <- "Decision Trees 1 (C5.0Tree)"
+  modelC5_0_3
+  modelC5_0_3$results
   
-  predictionC5_0 <- predict(model_c50_3, testDataWithoutLabelColumn)
+  predictionC5_0 <- predict(modelC5_0_3, testDataWithoutLabelColumn)
   
-  resulteHitsAndMissesPredictionC5_0 <- table(Predictions = predictionC5_0,  Test_data_label_column = testDataLabelColumn)
-  resulteHitsAndMissesPredictionC5_0
+  confusionMatrixPredictionDecisionTreesWithTable <- table(Predictions = predictionC5_0,  Reference = testDataLabelColumn)
+  confusionMatrixPredictionDecisionTreesWithTable
   
-  accuracyHitsAndMissesPredictionC5_0 <- prop.table(table(predictionC5_0 == testDataLabelColumn))
-  accuracyHitsAndMissesPredictionC5_0
+  accuracyAndErrorRatePredictionDecisionTrees <- prop.table(table(predictionC5_0 == testDataLabelColumn))
+  accuracyAndErrorRatePredictionDecisionTrees
   
 }
 
 # preparando dados de predicao c50_1 para arquivo .csv
 #--------------------------------
-dfResulteHitsAndMissesPredictionC5_0 <- data.frame(resulteHitsAndMissesPredictionC5_0)
-dfResulteHitsAndMissesPredictionC5_0$Technique <- bestC5_0
-dfResulteHitsAndMissesPredictionC5_0$Mean <- dfC5AccuracyOfTrainingData$Mean[1]
+dfconfusionMatrixPredictionDecisionTreesWithTable <- data.frame(confusionMatrixPredictionDecisionTreesWithTable)
+dfconfusionMatrixPredictionDecisionTreesWithTable$value_counts <- rbind("True Negative", "False Positive", "False Negative", "True Positive")
+dfconfusionMatrixPredictionDecisionTreesWithTable$Technique <- bestDecisionTrees
+dfconfusionMatrixPredictionDecisionTreesWithTable$Mean <- dfC5AccuracyOfTrainingData$Mean[1]
 #--------------------------------
-View(dfResulteHitsAndMissesPredictionC5_0)
+View(dfconfusionMatrixPredictionDecisionTreesWithTable)
 # preparando dados de probabilidade predicao rna1 para arquivo .csv
 #------------------------------------------------
-dfAccuracyHitsAndMissesPredictionC5_0Temp <- data.frame(accuracyHitsAndMissesPredictionC5_0)
+dfaccuracyAndErrorRatePredictionDecisionTreesTemp <- data.frame(accuracyAndErrorRatePredictionDecisionTrees)
 
-dfAccuracyHitsAndMissesPredictionC5_0 <- data.frame("Errors"=dfAccuracyHitsAndMissesPredictionC5_0Temp$Freq[1], "Test_data_accuracy"=dfAccuracyHitsAndMissesPredictionC5_0Temp$Freq[2])
-dfAccuracyHitsAndMissesPredictionC5_0$Training_data_accuracy <- dfC5AccuracyOfTrainingData$Mean[1]
-dfAccuracyHitsAndMissesPredictionC5_0$Technique <- bestC5_0
+dfaccuracyAndErrorRatePredictionDecisionTrees <- data.frame("Error_rate"=dfaccuracyAndErrorRatePredictionDecisionTreesTemp$Freq[1], "Test_data_accuracy"=dfaccuracyAndErrorRatePredictionDecisionTreesTemp$Freq[2])
+dfaccuracyAndErrorRatePredictionDecisionTrees$Training_data_accuracy <- dfC5AccuracyOfTrainingData$Mean[1]
+dfaccuracyAndErrorRatePredictionDecisionTrees$Technique <- bestDecisionTrees
 #-----------------------------------------------------
-View(dfAccuracyHitsAndMissesPredictionC5_0)
+View(dfaccuracyAndErrorRatePredictionDecisionTrees)
 
 
 #-------------------- RANDOM FOREST --------------------#
 
 bestTechniqueRandomForest <- dfBestTechniqueAccuracyOfTrainingData %>% filter(str_detect(Technique, "^Random"))
 
-if (bestTechniqueRandomForest[1] == "Random Forest 1") {
+if (bestTechniqueRandomForest[1] == "Random Forest 1 (rf)") {
   
-  bestRandomForest <- "Random Forest 1"
-  model_rf1
-  model_rf1$results
+  bestRandomForest <- "Random Forest 1 (rf)"
+  modelRandomForest1
+  modelRandomForest1$results
   
-  predictionRandomForest <- predict(model_rf1, testDataWithoutLabelColumn)
+  predictionRandomForest <- predict(modelRandomForest1, testDataWithoutLabelColumn)
   
-  resulteHitsAndMissesPredictionRandomForest <- table(Predictions = predictionRandomForest, Test_data_label_column = testDataLabelColumn)
-  resulteHitsAndMissesPredictionRandomForest
+  confusionMatrixPredictionRandomForestWithTable <- table(Predictions = predictionRandomForest, Reference = testDataLabelColumn)
+  confusionMatrixPredictionRandomForestWithTable
   
-  accuracyHitsAndMissesPredictionRandomForest <- prop.table(table(predictionRandomForest == testDataLabelColumn))
-  accuracyHitsAndMissesPredictionRandomForest
+  accuracyAndErrorRatePredictionRandomForest <- prop.table(table(predictionRandomForest == testDataLabelColumn))
+  accuracyAndErrorRatePredictionRandomForest
   
   
-} else if (bestTechniqueRandomForest[1] == "Random Forest 2") {
+} else if (bestTechniqueRandomForest[1] == "Random Forest 2 (cforest)") {
   
-  bestRandomForest <- "Random Forest 2"
-  model_rf2
-  model_rf2$results
+  bestRandomForest <- "Random Forest 2 (cforest)"
+  modelRandomForest2
+  modelRandomForest2$results
   
-  predictionRandomForest <- predict(model_rf2, testDataWithoutLabelColumn)
+  predictionRandomForest <- predict(modelRandomForest2, testDataWithoutLabelColumn)
   
-  resulteHitsAndMissesPredictionRandomForest <- table(Predictions = predictionRandomForest, Test_data_label_column = testDataLabelColumn)
-  resulteHitsAndMissesPredictionRandomForest
+  confusionMatrixPredictionRandomForestWithTable <- table(Predictions = predictionRandomForest, Reference = testDataLabelColumn)
+  confusionMatrixPredictionRandomForestWithTable
   
-  accuracyHitsAndMissesPredictionRandomForest <- prop.table(table(predictionRandomForest == testDataLabelColumn))
-  accuracyHitsAndMissesPredictionRandomForest
+  accuracyAndErrorRatePredictionRandomForest <- prop.table(table(predictionRandomForest == testDataLabelColumn))
+  accuracyAndErrorRatePredictionRandomForest
   
 } else {
   
-  bestRandomForest <- "Random Forest 3"
-  model_rf3
-  model_rf3$results
+  bestRandomForest <- "Random Forest 3 (parRF)"
+  modelRandomForest3
+  modelRandomForest3$results
   
-  predictionRandomForest <- predict(model_rf3, testDataWithoutLabelColumn)
+  predictionRandomForest <- predict(modelRandomForest3, testDataWithoutLabelColumn)
   
-  resulteHitsAndMissesPredictionRandomForest <- table(Predictions = predictionRandomForest, Test_data_label_column = testDataLabelColumn)
-  resulteHitsAndMissesPredictionRandomForest
+  confusionMatrixPredictionRandomForestWithTable <- table(Predictions = predictionRandomForest, Reference = testDataLabelColumn)
+  confusionMatrixPredictionRandomForestWithTable
   
-  accuracyHitsAndMissesPredictionRandomForest <- prop.table(table(predictionRandomForest == testDataLabelColumn))
-  accuracyHitsAndMissesPredictionRandomForest
+  accuracyAndErrorRatePredictionRandomForest <- prop.table(table(predictionRandomForest == testDataLabelColumn))
+  accuracyAndErrorRatePredictionRandomForest
   
 }
 
 # preparando dados de predicao rf para arquivo .csv
 #--------------------------------
-dfResulteHitsAndMissesPredictionRandomForest <- data.frame(resulteHitsAndMissesPredictionRandomForest)
-dfResulteHitsAndMissesPredictionRandomForest$Technique <- bestRandomForest
-dfResulteHitsAndMissesPredictionRandomForest$Mean <- dfRandomForestAccuracyOfTrainingData$Mean[1]
+dfconfusionMatrixPredictionRandomForestWithTable <- data.frame(confusionMatrixPredictionRandomForestWithTable)
+dfconfusionMatrixPredictionRandomForestWithTable$value_counts <- rbind("True Negative", "False Positive", "False Negative", "True Positive")
+dfconfusionMatrixPredictionRandomForestWithTable$Technique <- bestRandomForest
+dfconfusionMatrixPredictionRandomForestWithTable$Mean <- dfRandomForestAccuracyOfTrainingData$Mean[1]
 #--------------------------------
-View(dfResulteHitsAndMissesPredictionRandomForest)
+View(dfconfusionMatrixPredictionRandomForestWithTable)
 # preparando dados de probabilidade predicao rna1 para arquivo .csv
 #------------------------------------------------
-dfAccuracyHitsAndMissesPredictionRandomForestTemp <- data.frame(accuracyHitsAndMissesPredictionRandomForest)
+dfaccuracyAndErrorRatePredictionRandomForestTemp <- data.frame(accuracyAndErrorRatePredictionRandomForest)
 
-dfAccuracyHitsAndMissesPredictionRandomForest <- data.frame("Errors"=dfAccuracyHitsAndMissesPredictionRandomForestTemp$Freq[1], "Test_data_accuracy"=dfAccuracyHitsAndMissesPredictionRandomForestTemp$Freq[2])
-dfAccuracyHitsAndMissesPredictionRandomForest$Training_data_accuracy <- dfRandomForestAccuracyOfTrainingData$Mean[1]
-dfAccuracyHitsAndMissesPredictionRandomForest$Technique <- bestRandomForest
+dfaccuracyAndErrorRatePredictionRandomForest <- data.frame("Error_rate"=dfaccuracyAndErrorRatePredictionRandomForestTemp$Freq[1], "Test_data_accuracy"=dfaccuracyAndErrorRatePredictionRandomForestTemp$Freq[2])
+dfaccuracyAndErrorRatePredictionRandomForest$Training_data_accuracy <- dfRandomForestAccuracyOfTrainingData$Mean[1]
+dfaccuracyAndErrorRatePredictionRandomForest$Technique <- bestRandomForest
 #-----------------------------------------------------
-View(dfAccuracyHitsAndMissesPredictionRandomForest)
+View(dfaccuracyAndErrorRatePredictionRandomForest)
 
 
 #-------------------- KNN --------------------#
 
 bestTechniqueKnn <- dfBestTechniqueAccuracyOfTrainingData %>% filter(str_detect(Technique, "^k-NN"))
 
-if (bestTechniqueKnn[1] == "k-NN 1") {
+if (bestTechniqueKnn[1] == "k-NN 1 (knn)") {
   
-  bestKnn <- "k-NN 1"
-  model_knn1
-  model_knn1$results
+  bestKnn <- "k-NN 1 (knn)"
+  modelKnn1
+  modelKnn1$results
   
-  predictionKnn <- predict(model_knn1, testDataWithoutLabelColumn)
+  predictionKnn <- predict(modelKnn1, testDataWithoutLabelColumn)
   
-  resulteHitsAndMissesPredictionKnn <- table(Predictions = predictionKnn, Test_data_label_column = testDataLabelColumn)
-  resulteHitsAndMissesPredictionKnn
+  confusionMatrixPredictionKnnWithTable <- table(Predictions = predictionKnn, Reference = testDataLabelColumn)
+  confusionMatrixPredictionKnnWithTable
   
-  accuracyHitsAndMissesPredictionKnn <- prop.table(table(predictionKnn == testDataLabelColumn))
-  accuracyHitsAndMissesPredictionKnn
+  accuracyAndErrorRatePredictionKnn <- prop.table(table(predictionKnn == testDataLabelColumn))
+  accuracyAndErrorRatePredictionKnn
   
 } else {
   
-  bestKnn <- "k-NN 2"
-  model_knn2
-  model_knn2$results
+  bestKnn <- "k-NN 2 (kknn)"
+  modelKnn2
+  modelKnn2$results
   
-  predictionKnn <- predict(model_knn2, testDataWithoutLabelColumn)
+  predictionKnn <- predict(modelKnn2, testDataWithoutLabelColumn)
   
-  resulteHitsAndMissesPredictionKnn <- table(Predictions = predictionKnn, Test_data_label_column = testDataLabelColumn)
-  resulteHitsAndMissesPredictionKnn
+  confusionMatrixPredictionKnnWithTable <- table(Predictions = predictionKnn, Reference = testDataLabelColumn)
+  confusionMatrixPredictionKnnWithTable
   
-  accuracyHitsAndMissesPredictionKnn <- prop.table(table(predictionKnn == testDataLabelColumn))
-  accuracyHitsAndMissesPredictionKnn
+  accuracyAndErrorRatePredictionKnn <- prop.table(table(predictionKnn == testDataLabelColumn))
+  accuracyAndErrorRatePredictionKnn
   
 }
 
 # preparando dados de predicao knn para arquivo .csv
 #--------------------------------
-dfResulteHitsAndMissesPredictionKnn <- data.frame(resulteHitsAndMissesPredictionKnn)
-dfResulteHitsAndMissesPredictionKnn$Technique <- bestKnn
-dfResulteHitsAndMissesPredictionKnn$Mean <- dfKnnAccuracyOfTrainingData$Mean[1]
+dfconfusionMatrixPredictionKnnWithTable <- data.frame(confusionMatrixPredictionKnnWithTable)
+dfconfusionMatrixPredictionKnnWithTable$value_counts <- rbind("True Negative", "False Positive", "False Negative", "True Positive")
+dfconfusionMatrixPredictionKnnWithTable$Technique <- bestKnn
+dfconfusionMatrixPredictionKnnWithTable$Mean <- dfKnnAccuracyOfTrainingData$Mean[1]
 #--------------------------------
-View(dfResulteHitsAndMissesPredictionKnn)
+View(dfconfusionMatrixPredictionKnnWithTable)
 # preparando dados de probabilidade predicao rna1 para arquivo .csv
 #------------------------------------------------
-dfAccuracyHitsAndMissesPredictionKnnTemp <- data.frame(accuracyHitsAndMissesPredictionKnn)
+dfaccuracyAndErrorRatePredictionKnnTemp <- data.frame(accuracyAndErrorRatePredictionKnn)
 
-dfAccuracyHitsAndMissesPredictionKnn <- data.frame("Errors"=dfAccuracyHitsAndMissesPredictionKnnTemp$Freq[1], "Test_data_accuracy"=dfAccuracyHitsAndMissesPredictionKnnTemp$Freq[2])
-dfAccuracyHitsAndMissesPredictionKnn$Training_data_accuracy <- dfKnnAccuracyOfTrainingData$Mean[1]
-dfAccuracyHitsAndMissesPredictionKnn$Technique <- bestKnn
+dfaccuracyAndErrorRatePredictionKnn <- data.frame("Error_rate"=dfaccuracyAndErrorRatePredictionKnnTemp$Freq[1], "Test_data_accuracy"=dfaccuracyAndErrorRatePredictionKnnTemp$Freq[2])
+dfaccuracyAndErrorRatePredictionKnn$Training_data_accuracy <- dfKnnAccuracyOfTrainingData$Mean[1]
+dfaccuracyAndErrorRatePredictionKnn$Technique <- bestKnn
 #-----------------------------------------------------
-View(dfAccuracyHitsAndMissesPredictionKnn)
+View(dfaccuracyAndErrorRatePredictionKnn)
 
 
 
@@ -1088,276 +1126,282 @@ View(dfAccuracyHitsAndMissesPredictionKnn)
 
 bestTechniqueNaiveBayes <- dfBestTechniqueAccuracyOfTrainingData %>% filter(str_detect(Technique, "^Naive"))
 
-if (bestTechniqueNaiveBayes[1] == "Naive Bayes 1") {
+if (bestTechniqueNaiveBayes[1] == "Naive Bayes 1 (nb)") {
   
-  bestNaiveBayes <- "Naive Bayes 1"
-  model_nbayes1
-  model_nbayes1$results
+  bestNaiveBayes <- "Naive Bayes 1 (nb)"
+  modelNaiveBayes1
+  modelNaiveBayes1$results
   
-  predictionNaiveBayes <- predict(model_nbayes1, testDataWithoutLabelColumn)
+  predictionNaiveBayes <- predict(modelNaiveBayes1, testDataWithoutLabelColumn)
   
-  resulteHitsAndMissesPredictionNaiveBayes <- table(Predictions = predictionNaiveBayes, Test_data_label_column = testDataLabelColumn)
-  resulteHitsAndMissesPredictionNaiveBayes
+  confusionMatrixPredictionNaiveBayesWithTable <- table(Predictions = predictionNaiveBayes, Reference = testDataLabelColumn)
+  confusionMatrixPredictionNaiveBayesWithTable
   
-  accuracyHitsAndMissesPredictionNaiveBayes <- prop.table(table(predictionNaiveBayes == testDataLabelColumn))
-  accuracyHitsAndMissesPredictionNaiveBayes
+  accuracyAndErrorRatePredictionNaiveBayes <- prop.table(table(predictionNaiveBayes == testDataLabelColumn))
+  accuracyAndErrorRatePredictionNaiveBayes
   
 }else{
   
-  bestNaiveBayes <- "Naive Bayes 2"
-  model_nbayes2
-  model_nbayes2$results
+  bestNaiveBayes <- "Naive Bayes 2 (naive_bayes)"
+  modelNaiveBayes2
+  modelNaiveBayes2$results
   
-  predictionNaiveBayes <- predict(model_nbayes2, testDataWithoutLabelColumn)
+  predictionNaiveBayes <- predict(modelNaiveBayes2, testDataWithoutLabelColumn)
   
-  resulteHitsAndMissesPredictionNaiveBayes <- table(Predictions = predictionNaiveBayes, Test_data_label_column = testDataLabelColumn)
-  resulteHitsAndMissesPredictionNaiveBayes
+  confusionMatrixPredictionNaiveBayesWithTable <- table(Predictions = predictionNaiveBayes, Reference = testDataLabelColumn)
+  confusionMatrixPredictionNaiveBayesWithTable
   
-  accuracyHitsAndMissesPredictionNaiveBayes <- prop.table(table(predictionNaiveBayes == testDataLabelColumn))
-  accuracyHitsAndMissesPredictionNaiveBayes
+  accuracyAndErrorRatePredictionNaiveBayes <- prop.table(table(predictionNaiveBayes == testDataLabelColumn))
+  accuracyAndErrorRatePredictionNaiveBayes
   
 }
 
 # preparando dados de predicao nbayes2 para arquivo .csv
 #--------------------------------
-dfResulteHitsAndMissesPredictionNaiveBayes <- data.frame(resulteHitsAndMissesPredictionNaiveBayes)
-dfResulteHitsAndMissesPredictionNaiveBayes$Technique <- bestNaiveBayes
-dfResulteHitsAndMissesPredictionNaiveBayes$Mean <- dfNaiveBayesAccuracyOfTrainingData$Mean[1]
+dfconfusionMatrixPredictionNaiveBayesWithTable <- data.frame(confusionMatrixPredictionNaiveBayesWithTable)
+dfconfusionMatrixPredictionNaiveBayesWithTable$value_counts <- rbind("True Negative", "False Positive", "False Negative", "True Positive")
+dfconfusionMatrixPredictionNaiveBayesWithTable$Technique <- bestNaiveBayes
+dfconfusionMatrixPredictionNaiveBayesWithTable$Mean <- dfNaiveBayesAccuracyOfTrainingData$Mean[1]
 #--------------------------------
-View(dfResulteHitsAndMissesPredictionNaiveBayes)
+View(dfconfusionMatrixPredictionNaiveBayesWithTable)
 # preparando dados de probabilidade predicao rna1 para arquivo .csv
 #------------------------------------------------
-dfAccuracyHitsAndMissesPredictionNaiveBayesTemp <- data.frame(accuracyHitsAndMissesPredictionNaiveBayes)
+dfaccuracyAndErrorRatePredictionNaiveBayesTemp <- data.frame(accuracyAndErrorRatePredictionNaiveBayes)
 
-dfAccuracyHitsAndMissesPredictionNaiveBayes <- data.frame("Errors"=dfAccuracyHitsAndMissesPredictionNaiveBayesTemp$Freq[1], "Test_data_accuracy"=dfAccuracyHitsAndMissesPredictionNaiveBayesTemp$Freq[2])
-dfAccuracyHitsAndMissesPredictionNaiveBayes$Training_data_accuracy <- dfNaiveBayesAccuracyOfTrainingData$Mean[1]
-dfAccuracyHitsAndMissesPredictionNaiveBayes$Technique <- bestNaiveBayes
+dfaccuracyAndErrorRatePredictionNaiveBayes <- data.frame("Error_rate"=dfaccuracyAndErrorRatePredictionNaiveBayesTemp$Freq[1], "Test_data_accuracy"=dfaccuracyAndErrorRatePredictionNaiveBayesTemp$Freq[2])
+dfaccuracyAndErrorRatePredictionNaiveBayes$Training_data_accuracy <- dfNaiveBayesAccuracyOfTrainingData$Mean[1]
+dfaccuracyAndErrorRatePredictionNaiveBayes$Technique <- bestNaiveBayes
 #-----------------------------------------------------
-View(dfAccuracyHitsAndMissesPredictionNaiveBayes)
+View(dfaccuracyAndErrorRatePredictionNaiveBayes)
 
 
 # criando arquivo resulteHitsAndMissesPrediction.csv
 #---------------------------------------
-dfResulteHitsAndMissesTechnicalPrediction <- rbind(dfResulteHitsAndMissesPredictionRna, dfResulteHitsAndMissesPredictionSvm, dfResulteHitsAndMissesPredictionCart, dfResulteHitsAndMissesPredictionC5_0, dfResulteHitsAndMissesPredictionRandomForest, dfResulteHitsAndMissesPredictionKnn, dfResulteHitsAndMissesPredictionNaiveBayes)
-View(dfResulteHitsAndMissesTechnicalPrediction)
+dfConfusionMatrixTechnicalPredictionWithTable <- rbind(dfconfusionMatrixPredictionRnaWithTable, dfconfusionMatrixPredictionSvmWithTable, dfconfusionMatrixPredictionCartWithTable, dfconfusionMatrixPredictionDecisionTreesWithTable, dfconfusionMatrixPredictionRandomForestWithTable, dfconfusionMatrixPredictionKnnWithTable, dfconfusionMatrixPredictionNaiveBayesWithTable)
+View(dfConfusionMatrixTechnicalPredictionWithTable)
 
 # # Crinado nova colunas no dataframe
-dfResulteHitsAndMissesTechnicalPrediction$semente <- seed
-dfResulteHitsAndMissesTechnicalPrediction$Amostras <- nrow(dfGenderVoice)
-dfResulteHitsAndMissesTechnicalPrediction$Amostras_Male <- numberOfMaleClassSamples
-dfResulteHitsAndMissesTechnicalPrediction$Amostras_Female <- numberOfFemaleClassSamples
-dfResulteHitsAndMissesTechnicalPrediction$Metodo_divisao_Dados <- dataDivisionMethod
-dfResulteHitsAndMissesTechnicalPrediction$Amostras_Treino_80p <- nrow(trainingData)
-dfResulteHitsAndMissesTechnicalPrediction$Amostras_Treino_Male <- numberOfSamplesMaleTrainingData
-dfResulteHitsAndMissesTechnicalPrediction$Amostras_Treino_Female <- numberOfSamplesFemaleTrainingData
-dfResulteHitsAndMissesTechnicalPrediction$Amostras_Teste_20p <- nrow(testData)
-dfResulteHitsAndMissesTechnicalPrediction$Amostras_Teste_Male <- numberOfSamplesMaleTestData
-dfResulteHitsAndMissesTechnicalPrediction$Amostras_Teste_Female <- numberOfSamplesFemaleTestData
+dfConfusionMatrixTechnicalPredictionWithTable$Seed <- seed
+dfConfusionMatrixTechnicalPredictionWithTable$Samples <- nrow(dfGenderVoice)
+dfConfusionMatrixTechnicalPredictionWithTable$Male_samples <- numberOfMaleClassSamples
+dfConfusionMatrixTechnicalPredictionWithTable$Female_samples <- numberOfFemaleClassSamples
+dfConfusionMatrixTechnicalPredictionWithTable$Data_division_method <- dataDivisionMethod
+dfConfusionMatrixTechnicalPredictionWithTable$Training_samples_80p <- nrow(trainingData)
+dfConfusionMatrixTechnicalPredictionWithTable$Training_samples_Female <- numberOfSamplesFemaleTrainingData
+dfConfusionMatrixTechnicalPredictionWithTable$Training_samples_Male <- numberOfSamplesMaleTrainingData
+dfConfusionMatrixTechnicalPredictionWithTable$Test_samples_20p <- nrow(testData)
+dfConfusionMatrixTechnicalPredictionWithTable$Test_samples_Female <- numberOfSamplesFemaleTestData
+dfConfusionMatrixTechnicalPredictionWithTable$Test_samples_Male <- numberOfSamplesMaleTestData
+dfConfusionMatrixTechnicalPredictionWithTable$Operational_System <- operationalSystem
 
+#alterando ordem das colunas do dataframe, a coluna "Technique" e colocada como primeira coluna
+dfConfusionMatrixTechnicalPredictionWithTable <- dfConfusionMatrixTechnicalPredictionWithTable %>% select(Technique, everything())
 
 # Ordenando o resultado
-dfResulteHitsAndMissesTechnicalPrediction <- dfResulteHitsAndMissesTechnicalPrediction[order(dfResulteHitsAndMissesTechnicalPrediction$Mean, decreasing=TRUE), ]
+dfConfusionMatrixTechnicalPredictionWithTable <- dfConfusionMatrixTechnicalPredictionWithTable[order(dfConfusionMatrixTechnicalPredictionWithTable$Mean, decreasing=TRUE), ]
 
 # removendo coluna "Mean" foi usada para ordenar os resultados da melhor tecnica
-dfResulteHitsAndMissesTechnicalPrediction$Mean <- NULL
+dfConfusionMatrixTechnicalPredictionWithTable$Mean <- NULL
 
 #Adicionando linha Na(Not Available) no dataframe
-dfResulteHitsAndMissesTechnicalPrediction <- addNaLineAtTheEndOfTheDataframe(dfResulteHitsAndMissesTechnicalPrediction)
+dfConfusionMatrixTechnicalPredictionWithTable <- addNaLineAtTheEndOfTheDataframe(dfConfusionMatrixTechnicalPredictionWithTable)
 
-# # Definindo o caminho a ser salvo o arquivo resulteHitsAndMissesTechnicalPrediction.csv
-filePathResulteHitsAndMissesTechnicalPrediction <- joinPathAndFilename(pathToSaveFile, "resulteHitsAndMissesTechnicalPrediction.csv")
+# # Definindo o caminho a ser salvo o arquivo confusionMatrixTechnicalPredictionWithTable.csv
+filePathResulteHitsAndMissesTechnicalPrediction <- joinPathAndFilename(pathToSaveFile, "confusionMatrixTechnicalPredictionWithTable.csv")
 
 # Salvando informacoes no arquivo .csv
-createAndUpdateFileCsv(filePathResulteHitsAndMissesTechnicalPrediction, dfResulteHitsAndMissesTechnicalPrediction)
+createAndUpdateFileCsv(filePathResulteHitsAndMissesTechnicalPrediction, dfConfusionMatrixTechnicalPredictionWithTable)
 
 # Lendo arquivo resulteHitsAndMissesTechnicalPrediction.csv
-dfResulteHitsAndMissesTechnicalPredictionView <- read.csv(filePathResulteHitsAndMissesTechnicalPrediction,header=TRUE,encoding="UTF-8")
-view(dfResulteHitsAndMissesTechnicalPredictionView)
+dfConfusionMatrixTechnicalPredictionWithTableView <- read.csv(filePathResulteHitsAndMissesTechnicalPrediction,header=TRUE,encoding="UTF-8")
+view(dfConfusionMatrixTechnicalPredictionWithTableView)
 
 #----------------------------------
 
-# criando arquivo accuracyHitsAndMissesPrediction.csv
+# criando arquivo accuracyAndErrorRateTechnicalPrediction.csv
 #-------------------------------------------------
 
-dfAccuracyHitsAndMissesTechnicalPrediction <- rbind(dfAccuracyHitsAndMissesPredictionRna, dfAccuracyHitsAndMissesPredictionSvm, dfAccuracyHitsAndMissesPredictionCart, dfAccuracyHitsAndMissesPredictionC5_0, dfAccuracyHitsAndMissesPredictionRandomForest, dfAccuracyHitsAndMissesPredictionKnn, dfAccuracyHitsAndMissesPredictionNaiveBayes)
-View(dfAccuracyHitsAndMissesTechnicalPrediction)
+dfAccuracyAndErrorRateTechnicalPrediction <- rbind(dfaccuracyAndErrorRatePredictionRna, dfaccuracyAndErrorRatePredictionSvm, dfaccuracyAndErrorRatePredictionCart, dfaccuracyAndErrorRatePredictionDecisionTrees, dfaccuracyAndErrorRatePredictionRandomForest, dfaccuracyAndErrorRatePredictionKnn, dfaccuracyAndErrorRatePredictionNaiveBayes)
+View(dfAccuracyAndErrorRateTechnicalPrediction)
 
 # # Crinado nova colunas no dataframe
-dfAccuracyHitsAndMissesTechnicalPrediction$semente <- seed
-dfAccuracyHitsAndMissesTechnicalPrediction$Amostras <- nrow(dfGenderVoice)
-dfAccuracyHitsAndMissesTechnicalPrediction$Amostras_Male <- numberOfMaleClassSamples
-dfAccuracyHitsAndMissesTechnicalPrediction$Amostras_Female <- numberOfFemaleClassSamples
-dfAccuracyHitsAndMissesTechnicalPrediction$Metodo_divisao_Dados <- dataDivisionMethod
-dfAccuracyHitsAndMissesTechnicalPrediction$Amostras_Treino_80p <- nrow(trainingData)
-dfAccuracyHitsAndMissesTechnicalPrediction$Amostras_Treino_Male <- numberOfSamplesMaleTrainingData
-dfAccuracyHitsAndMissesTechnicalPrediction$Amostras_Treino_Female <- numberOfSamplesFemaleTrainingData
-dfAccuracyHitsAndMissesTechnicalPrediction$Amostras_Teste_20p <- nrow(testData)
-dfAccuracyHitsAndMissesTechnicalPrediction$Amostras_Teste_Male <- numberOfSamplesMaleTestData
-dfAccuracyHitsAndMissesTechnicalPrediction$Amostras_Teste_Female <- numberOfSamplesFemaleTestData
+dfAccuracyAndErrorRateTechnicalPrediction$Seed <- seed
+dfAccuracyAndErrorRateTechnicalPrediction$Samples <- nrow(dfGenderVoice)
+dfAccuracyAndErrorRateTechnicalPrediction$Male_samples <- numberOfMaleClassSamples
+dfAccuracyAndErrorRateTechnicalPrediction$Female_samples <- numberOfFemaleClassSamples
+dfAccuracyAndErrorRateTechnicalPrediction$Data_division_method <- dataDivisionMethod
+dfAccuracyAndErrorRateTechnicalPrediction$Training_samples_80p <- nrow(trainingData)
+dfAccuracyAndErrorRateTechnicalPrediction$Training_samples_Female <- numberOfSamplesFemaleTrainingData
+dfAccuracyAndErrorRateTechnicalPrediction$Training_samples_Male <- numberOfSamplesMaleTrainingData
+dfAccuracyAndErrorRateTechnicalPrediction$Test_samples_20p <- nrow(testData)
+dfAccuracyAndErrorRateTechnicalPrediction$Test_samples_Female <- numberOfSamplesFemaleTestData
+dfAccuracyAndErrorRateTechnicalPrediction$Test_samples_Male <- numberOfSamplesMaleTestData
+dfAccuracyAndErrorRateTechnicalPrediction$Operational_System <- operationalSystem
 
-# Ordenando o resultado
-dfAccuracyHitsAndMissesTechnicalPrediction <- dfAccuracyHitsAndMissesTechnicalPrediction[order(dfAccuracyHitsAndMissesTechnicalPrediction$Test_data_accuracy, decreasing=TRUE), ]
+#alterando ordem das colunas do dataframe, a coluna "Technique" e colocada como primeira coluna
+dfAccuracyAndErrorRateTechnicalPrediction <- dfAccuracyAndErrorRateTechnicalPrediction %>% select(Technique, everything())
+
+# Ordenando o resultado pela acuracia de dados de teste
+dfAccuracyAndErrorRateTechnicalPrediction <- dfAccuracyAndErrorRateTechnicalPrediction[order(dfAccuracyAndErrorRateTechnicalPrediction$Test_data_accuracy, decreasing=TRUE), ]
 
 # Adicionando linha Na(Not Available) no dataframe
-dfAccuracyHitsAndMissesTechnicalPrediction <- addNaLineAtTheEndOfTheDataframe(dfAccuracyHitsAndMissesTechnicalPrediction)
+dfAccuracyAndErrorRateTechnicalPrediction <- addNaLineAtTheEndOfTheDataframe(dfAccuracyAndErrorRateTechnicalPrediction)
 
-# Definindo o caminho a ser salvo o arquivo accuracyHitsAndMissesTechnicalPrediction.csv
-filePathAccuracyHitsAndMissesTechnicalPrediction <- joinPathAndFilename(pathToSaveFile, "accuracyHitsAndMissesTechnicalPrediction.csv")
+# Definindo o caminho a ser salvo o arquivo accuracyAndErrorRateTechnicalPrediction.csv
+filePathAccuracyHitsAndMissesTechnicalPrediction <- joinPathAndFilename(pathToSaveFile, "accuracyAndErrorRateTechnicalPrediction.csv")
 
 # Salvando informacoes no arquivo .csv
-createAndUpdateFileCsv(filePathAccuracyHitsAndMissesTechnicalPrediction, dfAccuracyHitsAndMissesTechnicalPrediction)
+createAndUpdateFileCsv(filePathAccuracyHitsAndMissesTechnicalPrediction, dfAccuracyAndErrorRateTechnicalPrediction)
 
 # Lendo accuracyHitsAndMissesTechnicalPrediction.csv
-dfAccuracyHitsAndMissesTechnicalPredictionView <- read.csv(filePathAccuracyHitsAndMissesTechnicalPrediction,header=TRUE,encoding="UTF-8")
-view(dfAccuracyHitsAndMissesTechnicalPredictionView)
+dfAccuracyAndErrorRateTechnicalPredictionView <- read.csv(filePathAccuracyHitsAndMissesTechnicalPrediction,header=TRUE,encoding="UTF-8")
+view(dfAccuracyAndErrorRateTechnicalPredictionView)
 
 #--------------------------------------------------
 
 #str(predictionRna)
 #str(testDataLabelColumn)
 
-levels(predictionRna)
-levels(testDataLabelColumn)
-
-testDataLabelColumn <- factor(testDataLabelColumn)
-
+#levels(predictionRna)
+#levels(testDataLabelColumn)
 
 
 # ********** Matriz de confusao - estatisticas dos resultados da predicao ********** #
 
-confusionMatrixRna <- confusionMatrix(predictionRna, testDataLabelColumn)
-confusionMatrixSvm <- confusionMatrix(predictionSvm, testDataLabelColumn)
-confusionMatrixCart <- confusionMatrix(predictionCart, testDataLabelColumn)
-confusionMatrixC5_0 <- confusionMatrix(predictionC5_0, testDataLabelColumn)
-confusionMatrixRandomForest <- confusionMatrix(predictionRandomForest, testDataLabelColumn)
-confusionMatrixKnn <- confusionMatrix(predictionKnn, testDataLabelColumn)
-confusionMatrixNaiveBayes <- confusionMatrix(predictionNaiveBayes, testDataLabelColumn)
+testDataLabelColumn <- factor(testDataLabelColumn)
+
+confusionMatrixPredictionRna <- confusionMatrix(predictionRna, testDataLabelColumn)
+confusionMatrixPredictionSvm <- confusionMatrix(predictionSvm, testDataLabelColumn)
+confusionMatrixPredictionCart <- confusionMatrix(predictionCart, testDataLabelColumn)
+confusionMatrixPredictionC5_0 <- confusionMatrix(predictionC5_0, testDataLabelColumn)
+confusionMatrixPredictionRandomForest <- confusionMatrix(predictionRandomForest, testDataLabelColumn)
+confusionMatrixPredictionKnn <- confusionMatrix(predictionKnn, testDataLabelColumn)
+confusionMatrixPredictionNaiveBayes <- confusionMatrix(predictionNaiveBayes, testDataLabelColumn)
 
 
-confusionMatrixRna
-confusionMatrixSvm
-confusionMatrixCart
-confusionMatrixC5_0
-confusionMatrixRandomForest
-confusionMatrixKnn
-confusionMatrixNaiveBayes
+confusionMatrixPredictionRna
+confusionMatrixPredictionSvm
+confusionMatrixPredictionCart
+confusionMatrixPredictionC5_0
+confusionMatrixPredictionRandomForest
+confusionMatrixPredictionKnn
+confusionMatrixPredictionNaiveBayes
 
-confusionMatrixRna$table
-confusionMatrixRna$overall
-confusionMatrixRna$overall[1]
+confusionMatrixPredictionRna$table
+confusionMatrixPredictionRna$overall
+confusionMatrixPredictionRna$overall[1]
 
 # Informacoes de predicao dos dados de teste da matriz de confusao
 # Pegando informacoes para confusionMatrixPredictionResult.csv
 #--------------------------------------------------------------
 
-dfConfusionMatrixRna <- data.frame(confusionMatrixRna$table)
-View(dfConfusionMatrixRna)
-dfConfusionMatrixRna$Technique <- bestRna
-dfConfusionMatrixRna$Accuracy <- confusionMatrixRna$overall[1]
+dfConfusionMatrixPredictionRna <- data.frame(confusionMatrixPredictionRna$table)
+dfConfusionMatrixPredictionRna$Technique <- bestRna
+dfConfusionMatrixPredictionRna$Accuracy <- confusionMatrixPredictionRna$overall[1]
 
-dfpredicaoSvm <- data.frame(confusionMatrixSvm$table)
-dfpredicaoSvm$Technique <- bestSvm
-dfpredicaoSvm$Accuracy <- confusionMatrixSvm$overall[1]
+dfConfusionMatrixPredictionSvm <- data.frame(confusionMatrixPredictionSvm$table)
+dfConfusionMatrixPredictionSvm$Technique <- bestSvm
+dfConfusionMatrixPredictionSvm$Accuracy <- confusionMatrixPredictionSvm$overall[1]
 
-dfpredicaoRpart <- data.frame(confusionMatrixCart$table)
-dfpredicaoRpart$Technique <- bestCart
-dfpredicaoRpart$Accuracy <- confusionMatrixCart$overall[1]
+dfConfusionMatrixPredictionCart <- data.frame(confusionMatrixPredictionCart$table)
+dfConfusionMatrixPredictionCart$Technique <- bestCart
+dfConfusionMatrixPredictionCart$Accuracy <- confusionMatrixPredictionCart$overall[1]
 
-dfpredicaoC50 <- data.frame(confusionMatrixC5_0$table)
-dfpredicaoC50$Technique <- bestC5_0
-dfpredicaoC50$Accuracy <- confusionMatrixC5_0$overall[1]
+dfConfusionMatrixPredictionC5_0 <- data.frame(confusionMatrixPredictionC5_0$table)
+dfConfusionMatrixPredictionC5_0$Technique <- bestDecisionTrees
+dfConfusionMatrixPredictionC5_0$Accuracy <- confusionMatrixPredictionC5_0$overall[1]
 
-dfpredicaoRf <- data.frame(confusionMatrixRandomForest$table)
-dfpredicaoRf$Technique <- bestRandomForest
-dfpredicaoRf$Accuracy <- confusionMatrixRandomForest$overall[1]
+dfConfusionMatrixPredictionRandomForest <- data.frame(confusionMatrixPredictionRandomForest$table)
+dfConfusionMatrixPredictionRandomForest$Technique <- bestRandomForest
+dfConfusionMatrixPredictionRandomForest$Accuracy <- confusionMatrixPredictionRandomForest$overall[1]
 
-dfpredicaoKnn <- data.frame(confusionMatrixKnn$table)
-dfpredicaoKnn$Technique <- bestKnn
-dfpredicaoKnn$Accuracy <- confusionMatrixKnn$overall[1]
+dfConfusionMatrixPredictionKnn <- data.frame(confusionMatrixPredictionKnn$table)
+dfConfusionMatrixPredictionKnn$Technique <- bestKnn
+dfConfusionMatrixPredictionKnn$Accuracy <- confusionMatrixPredictionKnn$overall[1]
 
-dfpredicaonbayes <- data.frame(confusionMatrixNaiveBayes$table)
-dfpredicaonbayes$Technique <- bestNaiveBayes
-dfpredicaonbayes$Accuracy <- confusionMatrixNaiveBayes$overall[1]
+dfConfusionMatrixPredictionNaiveBayes <- data.frame(confusionMatrixPredictionNaiveBayes$table)
+dfConfusionMatrixPredictionNaiveBayes$Technique <- bestNaiveBayes
+dfConfusionMatrixPredictionNaiveBayes$Accuracy <- confusionMatrixPredictionNaiveBayes$overall[1]
 
-dfpred <- rbind(dfConfusionMatrixRna, dfpredicaoSvm, dfpredicaoRpart, dfpredicaoC50, dfpredicaoRf, dfpredicaoKnn, dfpredicaonbayes)
-View(dfpred)
+dfConfusionMatrixPredictionTechniques <- rbind(dfConfusionMatrixPredictionRna, dfConfusionMatrixPredictionSvm, dfConfusionMatrixPredictionCart, dfConfusionMatrixPredictionC5_0, dfConfusionMatrixPredictionRandomForest, dfConfusionMatrixPredictionKnn, dfConfusionMatrixPredictionNaiveBayes)
+View(dfConfusionMatrixPredictionTechniques)
 # Crinado nova colunas no dataframe
-dfpred$semente <- seed
-dfpred$Amostras <- nrow(dfGenderVoice)
-dfpred$Amostras_Male <- numberOfMaleClassSamples
-dfpred$Amostras_Female <- numberOfFemaleClassSamples
-dfpred$Metodo_divisao_Dados <- dataDivisionMethod
-dfpred$Amostras_Treino_80p <- nrow(trainingData)
-dfpred$Amostras_Treino_Male <- numberOfSamplesMaleTrainingData
-dfpred$Amostras_Treino_Female <- numberOfSamplesFemaleTrainingData
-dfpred$Amostras_Teste_20p <- nrow(testData)
-dfpred$Amostras_Teste_Male <- numberOfSamplesMaleTestData
-dfpred$Amostras_Teste_Female <- numberOfSamplesFemaleTestData
+dfConfusionMatrixPredictionTechniques$Seed <- seed
+dfConfusionMatrixPredictionTechniques$Samples <- nrow(dfGenderVoice)
+dfConfusionMatrixPredictionTechniques$Male_samples <- numberOfMaleClassSamples
+dfConfusionMatrixPredictionTechniques$Female_samples <- numberOfFemaleClassSamples
+dfConfusionMatrixPredictionTechniques$Data_division_method <- dataDivisionMethod
+dfConfusionMatrixPredictionTechniques$Training_samples_80p <- nrow(trainingData)
+dfConfusionMatrixPredictionTechniques$Training_samples_Female <- numberOfSamplesFemaleTrainingData
+dfConfusionMatrixPredictionTechniques$Training_samples_Male <- numberOfSamplesMaleTrainingData
+dfConfusionMatrixPredictionTechniques$Test_samples_20p <- nrow(testData)
+dfConfusionMatrixPredictionTechniques$Test_samples_Female <- numberOfSamplesFemaleTestData
+dfConfusionMatrixPredictionTechniques$Test_samples_Male <- numberOfSamplesMaleTestData
 
 # Ordenar linhas com base na coluna Accuracy
-dfpred <- dfpred[order(dfpred$Accuracy, decreasing=TRUE), ]
+dfConfusionMatrixPredictionTechniques <- dfConfusionMatrixPredictionTechniques[order(dfConfusionMatrixPredictionTechniques$Accuracy, decreasing=TRUE), ]
 
-#Adicionando linha Na no dataframe
-dfpred <- addNaLineAtTheEndOfTheDataframe(dfpred)
+# Adicionando linha Na(Not Available) no dataframe
+dfConfusionMatrixPredictionTechniques <- addNaLineAtTheEndOfTheDataframe(dfConfusionMatrixPredictionTechniques)
 
-# Definindo o caminho a ser salvo o arquivo TechniquePredictionConfusionMatrix.csv
-filePathTechniquePredictionConfusionMatrix <- joinPathAndFilename(pathToSaveFile, "techniquePredictionConfusionMatrix.csv")
+# Definindo o caminho a ser salvo o arquivo confusionMatrixPredictionTechniques.csv
+filePathTechniquePredictionConfusionMatrix <- joinPathAndFilename(pathToSaveFile, "confusionMatrixPredictionTechniques.csv")
 
 # Salvando informacoes no arquivo .csv
-createAndUpdateFileCsv(filePathTechniquePredictionConfusionMatrix, dfpred)
+createAndUpdateFileCsv(filePathTechniquePredictionConfusionMatrix, dfConfusionMatrixPredictionTechniques)
 
-# Lendo accuracyHitsAndMissesTechnicalPrediction.csv
+# Lendo confusionMatrixPredictionTechniques.csv
 dfTechniquePredictionConfusionMatrixView <- read.csv(filePathTechniquePredictionConfusionMatrix,header=TRUE,encoding="UTF-8")
 view(dfTechniquePredictionConfusionMatrixView)
 
 #---------------------------------------------
-confusionMatrixRna$overall
-confusionMatrixRna$byClass
+confusionMatrixPredictionRna$overall
+confusionMatrixPredictionRna$byClass
 
 # Informacoes de estatistica(acuracia,...) dos dados de teste - matriz de confusao
 # Pegando informacoes para resultadoMatrizConfusaoEstatist.csv
 #-----------------------------------------------------------------
-dfCfmRna <- data.frame(cbind(t(confusionMatrixRna$overall),t(confusionMatrixRna$byClass)))
-dfCfmSvm <- data.frame(cbind(t(confusionMatrixSvm$overall),t(confusionMatrixSvm$byClass)))
-dfCfmRpart <- data.frame(cbind(t(confusionMatrixCart$overall),t(confusionMatrixCart$byClass)))
-dfCfmC50 <- data.frame(cbind(t(confusionMatrixC5_0$overall),t(confusionMatrixC5_0$byClass)))
-dfCfmRf <- data.frame(cbind(t(confusionMatrixRandomForest$overall),t(confusionMatrixRandomForest$byClass)))
-dfCfmKnn <- data.frame(cbind(t(confusionMatrixKnn$overall),t(confusionMatrixKnn$byClass)))
-dfCfmNbayes <- data.frame(cbind(t(confusionMatrixNaiveBayes$overall),t(confusionMatrixNaiveBayes$byClass)))
+dfAccuracyAndOtherInformationPredictionRna <- data.frame(cbind(t(confusionMatrixPredictionRna$overall),t(confusionMatrixPredictionRna$byClass)))
+dfAccuracyAndOtherInformationPredictionSvm <- data.frame(cbind(t(confusionMatrixPredictionSvm$overall),t(confusionMatrixPredictionSvm$byClass)))
+dfAccuracyAndOtherInformationPredictionCart <- data.frame(cbind(t(confusionMatrixPredictionCart$overall),t(confusionMatrixPredictionCart$byClass)))
+dfAccuracyAndOtherInformationPredictionC5_0 <- data.frame(cbind(t(confusionMatrixPredictionC5_0$overall),t(confusionMatrixPredictionC5_0$byClass)))
+dfAccuracyAndOtherInformationPredictionRandomForest <- data.frame(cbind(t(confusionMatrixPredictionRandomForest$overall),t(confusionMatrixPredictionRandomForest$byClass)))
+dfAccuracyAndOtherInformationPredictionKnn <- data.frame(cbind(t(confusionMatrixPredictionKnn$overall),t(confusionMatrixPredictionKnn$byClass)))
+dfAccuracyAndOtherInformationPredictionNaiveBayes <- data.frame(cbind(t(confusionMatrixPredictionNaiveBayes$overall),t(confusionMatrixPredictionNaiveBayes$byClass)))
 
-dfCfmTecnicas <- rbind(dfCfmRna, dfCfmSvm, dfCfmRpart, dfCfmC50, dfCfmRf, dfCfmKnn, dfCfmNbayes)
-View(dfCfmTecnicas)
+dfAccuracyAndOtherInformationTechniquesPrediction <- rbind(dfAccuracyAndOtherInformationPredictionRna, dfAccuracyAndOtherInformationPredictionSvm, dfAccuracyAndOtherInformationPredictionCart, dfAccuracyAndOtherInformationPredictionC5_0, dfAccuracyAndOtherInformationPredictionRandomForest, dfAccuracyAndOtherInformationPredictionKnn, dfAccuracyAndOtherInformationPredictionNaiveBayes)
+View(dfAccuracyAndOtherInformationTechniquesPrediction)
 
-# Criando coluna tecnicas
-dfCfmTecnicas$Technique <- c(bestRna, bestSvm, bestCart, bestC5_0, bestRandomForest, bestKnn, bestNaiveBayes)
+# Criando coluna Technique
+dfAccuracyAndOtherInformationTechniquesPrediction$Technique <- c(bestRna, bestSvm, bestCart, bestDecisionTrees, bestRandomForest, bestKnn, bestNaiveBayes)
 
 # Crinado nova colunas no dataframe
-dfCfmTecnicas$semente <- seed
-dfCfmTecnicas$Amostras <- nrow(dfGenderVoice)
-dfCfmTecnicas$Amostras_Male <- numberOfMaleClassSamples
-dfCfmTecnicas$Amostras_Female <- numberOfFemaleClassSamples
-dfCfmTecnicas$Metodo_divisao_Dados <- dataDivisionMethod
-dfCfmTecnicas$Amostras_Treino_80p <- nrow(trainingData)
-dfCfmTecnicas$Amostras_Treino_Male <- numberOfSamplesMaleTrainingData
-dfCfmTecnicas$Amostras_Treino_Female <- numberOfSamplesFemaleTrainingData
-dfCfmTecnicas$Amostras_Teste_20p <- nrow(testData)
-dfCfmTecnicas$Amostras_Teste_Male <- numberOfSamplesMaleTestData
-dfCfmTecnicas$Amostras_Teste_Female <- numberOfSamplesFemaleTestData
+dfAccuracyAndOtherInformationTechniquesPrediction$Seed <- seed
+dfAccuracyAndOtherInformationTechniquesPrediction$Samples <- nrow(dfGenderVoice)
+dfAccuracyAndOtherInformationTechniquesPrediction$Male_samples <- numberOfMaleClassSamples
+dfAccuracyAndOtherInformationTechniquesPrediction$Female_samples <- numberOfFemaleClassSamples
+dfAccuracyAndOtherInformationTechniquesPrediction$Data_division_method <- dataDivisionMethod
+dfAccuracyAndOtherInformationTechniquesPrediction$Training_samples_80p <- nrow(trainingData)
+dfAccuracyAndOtherInformationTechniquesPrediction$Training_samples_Female <- numberOfSamplesFemaleTrainingData
+dfAccuracyAndOtherInformationTechniquesPrediction$Training_samples_Male <- numberOfSamplesMaleTrainingData
+dfAccuracyAndOtherInformationTechniquesPrediction$Test_samples_20p <- nrow(testData)
+dfAccuracyAndOtherInformationTechniquesPrediction$Test_samples_Female <- numberOfSamplesFemaleTestData
+dfAccuracyAndOtherInformationTechniquesPrediction$Test_samples_Male <- numberOfSamplesMaleTestData
 
 
 #alterando ordem das colunas
-dfCfmTecnicas <- dfCfmTecnicas %>% select(Technique, everything())
+dfAccuracyAndOtherInformationTechniquesPrediction <- dfAccuracyAndOtherInformationTechniquesPrediction %>% select(Technique, everything())
 
-dfCfmTecnicas <- dfCfmTecnicas[order(dfCfmTecnicas$Accuracy, decreasing=TRUE), ]
+dfAccuracyAndOtherInformationTechniquesPrediction <- dfAccuracyAndOtherInformationTechniquesPrediction[order(dfAccuracyAndOtherInformationTechniquesPrediction$Accuracy, decreasing=TRUE), ]
 
 #Adicionando linha Na no dataframe
-dfCfmTecnicas <- addNaLineAtTheEndOfTheDataframe(dfCfmTecnicas)
+dfAccuracyAndOtherInformationTechniquesPrediction <- addNaLineAtTheEndOfTheDataframe(dfAccuracyAndOtherInformationTechniquesPrediction)
 
-# Definindo o caminho a ser salvo o arquivo accuracyAndOtherInformationTechniquePrediction.csv
-filePathAccuracyAndOtherInformationTechniquePrediction <- joinPathAndFilename(pathToSaveFile, "accuracyAndOtherInformationTechniquePrediction.csv")
+# Definindo o caminho a ser salvo o arquivo accuracyAndOtherInformationTechniquesPrediction.csv
+filePathAccuracyAndOtherInformationTechniquePrediction <- joinPathAndFilename(pathToSaveFile, "accuracyAndOtherInformationTechniquesPrediction.csv")
 
 # Salvando informacoes no arquivo .csv
-createAndUpdateFileCsv(filePathAccuracyAndOtherInformationTechniquePrediction, dfCfmTecnicas)
+createAndUpdateFileCsv(filePathAccuracyAndOtherInformationTechniquePrediction, dfAccuracyAndOtherInformationTechniquesPrediction)
 
 # Lendo accuracyHitsAndMissesTechnicalPrediction.csv
 dfAccuracyAndOtherInformationTechniquePredictionView <- read.csv(filePathAccuracyAndOtherInformationTechniquePrediction,header=TRUE,encoding="UTF-8")
@@ -1367,13 +1411,13 @@ view(dfAccuracyAndOtherInformationTechniquePredictionView)
 
 ## ----verificar quais variaveis preditoras tiveram a maior importancia
 
-# ggplot(varImp(model_rna1))
-# ggplot(varImp(model_svm2))
-# ggplot(varImp(model_cart1))
-# ggplot(varImp(model_c50_1))
-# ggplot(varImp(model_rf3))
-# ggplot(varImp(model_knn2))
-# ggplot(varImp(model_nbayes2))
+# ggplot(varImp(modelRna1))
+# ggplot(varImp(modelSvm2))
+# ggplot(varImp(modelCart1))
+# ggplot(varImp(modelC5_0_1))
+# ggplot(varImp(modelRandomForest3))
+# ggplot(varImp(modelKnn2))
+# ggplot(varImp(modelNaiveBayes2))
 
 
 
