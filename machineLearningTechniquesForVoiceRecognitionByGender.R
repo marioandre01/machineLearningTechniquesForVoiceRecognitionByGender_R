@@ -95,6 +95,9 @@
 # pseudo-aleatorios (RNG, na sigla em Ingles). Isso e ideal para criar simulações ou objetos 
 # aleatórios que podem ser reproduzidos.
 
+# Comentar linha no R -> coloque o cursosr na linha e aperte Ctrl + shift + C
+
+# Comentar varias linhas no R -> selecione as linhas e aperte Ctrl + shift + C
 
 # ---------------------------------------------------------------
 
@@ -299,7 +302,7 @@ numberOfFemaleClassSamples <- numberOfSamplesOfClasses[1]
 numberOfMaleClassSamples <- numberOfSamplesOfClasses[2]
 
 
-
+# fucao para adicionar colunas com os prametros da analise
 addTrainingParameterColumns  <- function(dataFrame, 
                          seed, 
                          dfGenderVoice, 
@@ -339,6 +342,7 @@ addTrainingParameterColumns  <- function(dataFrame,
   return(dataFrame)
 }
 
+# Funcao para adicionar colunas com parametros da analise de matriz de confusao
 dfConfusionMatrixPredictionTechniqueWithParameterColumns <- function(confusionMatrixPredictionTechniqueWithTable, 
                                                           bestTechnique, 
                                                           dfTechniqueAccuracyOfTrainingData){
@@ -357,6 +361,7 @@ dfConfusionMatrixPredictionTechniqueWithParameterColumns <- function(confusionMa
   return(dataFrame)
 }
 
+# Funcao para adicionar colunas com parametros da analise de acuracia e taxa de erro da matriz de confusao
 dfAccuracyAndErrorRatePredictionTechniqueWithParameterColumns <- function(dfaccuracyAndErrorRatePredictionTechniqueTemp, 
                                                                            dfTechniqueAccuracyOfTrainingData, 
                                                                            bestTechnique){
@@ -759,9 +764,9 @@ dfCartAccuracyOfTrainingData <- dfAccuracyOfTrainingDataTechniquesNew %>% filter
 dfCartAccuracyOfTrainingData <- dfCartAccuracyOfTrainingData[order(dfCartAccuracyOfTrainingData$Mean, decreasing=TRUE), ]
 # view(dfCartAccuracyOfTrainingData)
 
-dfC5AccuracyOfTrainingData <- dfAccuracyOfTrainingDataTechniquesNew %>% filter(str_detect(Technique, "^Decision"))
-dfC5AccuracyOfTrainingData <- dfC5AccuracyOfTrainingData[order(dfC5AccuracyOfTrainingData$Mean, decreasing=TRUE), ]
-#view(dfC5AccuracyOfTrainingData)
+dfDecisionTreesAccuracyOfTrainingData <- dfAccuracyOfTrainingDataTechniquesNew %>% filter(str_detect(Technique, "^Decision"))
+dfDecisionTreesAccuracyOfTrainingData <- dfDecisionTreesAccuracyOfTrainingData[order(dfDecisionTreesAccuracyOfTrainingData$Mean, decreasing=TRUE), ]
+#view(dfDecisionTreesAccuracyOfTrainingData)
 
 dfRandomForestAccuracyOfTrainingData <- dfAccuracyOfTrainingDataTechniquesNew %>% filter(str_detect(Technique, "^Random"))
 dfRandomForestAccuracyOfTrainingData <- dfRandomForestAccuracyOfTrainingData[order(dfRandomForestAccuracyOfTrainingData$Mean, decreasing=TRUE), ]
@@ -775,7 +780,7 @@ dfNaiveBayesAccuracyOfTrainingData <- dfNaiveBayesAccuracyOfTrainingData[order(d
 # view(dfNaiveBayesAccuracyOfTrainingData)
 
 # Pegando a melhor tecnica de cada tecnica analisada e juntando em um dataframe
-dfBestTechniqueAccuracyOfTrainingData <- rbind(dfRnaAccuracyOfTrainingData[1,], dfSvmAccuracyOfTrainingData[1,], dfCartAccuracyOfTrainingData[1,], dfC5AccuracyOfTrainingData[1,], dfRandomForestAccuracyOfTrainingData[1,], dfKnnAccuracyOfTrainingData[1,], dfNaiveBayesAccuracyOfTrainingData[1,])
+dfBestTechniqueAccuracyOfTrainingData <- rbind(dfRnaAccuracyOfTrainingData[1,], dfSvmAccuracyOfTrainingData[1,], dfCartAccuracyOfTrainingData[1,], dfDecisionTreesAccuracyOfTrainingData[1,], dfRandomForestAccuracyOfTrainingData[1,], dfKnnAccuracyOfTrainingData[1,], dfNaiveBayesAccuracyOfTrainingData[1,])
 
 # Ordenando o resultado
 dfBestTechniqueAccuracyOfTrainingData <- dfBestTechniqueAccuracyOfTrainingData[order(dfBestTechniqueAccuracyOfTrainingData$Mean, decreasing=TRUE), ]
@@ -1028,7 +1033,7 @@ if (bestTechniqueCart[1] == "CART 1 (rpart)") {
 
 # preparando dados de predicao cart1 para arquivo .csv
 #--------------------------------
-dfconfusionMatrixPredictionSvmWithTable <- dfConfusionMatrixPredictionTechniqueWithParameterColumns(confusionMatrixPredictionCartWithTable,
+dfconfusionMatrixPredictionCartWithTable <- dfConfusionMatrixPredictionTechniqueWithParameterColumns(confusionMatrixPredictionCartWithTable,
                                                                                                     bestCart,
                                                                                                     dfCartAccuracyOfTrainingData)
 
@@ -1038,7 +1043,7 @@ dfconfusionMatrixPredictionSvmWithTable <- dfConfusionMatrixPredictionTechniqueW
 #dfconfusionMatrixPredictionCartWithTable$Technique <- bestCart
 #dfconfusionMatrixPredictionCartWithTable$Mean <- dfCartAccuracyOfTrainingData$Mean[1]
 #--------------------------------
-View(dfconfusionMatrixPredictionSvmWithTable)
+View(dfconfusionMatrixPredictionCartWithTable)
 
 # preparando dados de probabilidade predicao rna1 para arquivo .csv
 #------------------------------------------------
@@ -1108,19 +1113,28 @@ if (bestTechniqueDecisionTrees[1] == "Decision Trees 1 (C5.0)") {
 
 # preparando dados de predicao c50_1 para arquivo .csv
 #--------------------------------
-dfconfusionMatrixPredictionDecisionTreesWithTable <- data.frame(confusionMatrixPredictionDecisionTreesWithTable)
-dfconfusionMatrixPredictionDecisionTreesWithTable$value_counts <- rbind("True Negative", "False Positive", "False Negative", "True Positive")
-dfconfusionMatrixPredictionDecisionTreesWithTable$Technique <- bestDecisionTrees
-dfconfusionMatrixPredictionDecisionTreesWithTable$Mean <- dfC5AccuracyOfTrainingData$Mean[1]
+
+dfconfusionMatrixPredictionDecisionTreesWithTable <- dfConfusionMatrixPredictionTechniqueWithParameterColumns(confusionMatrixPredictionDecisionTreesWithTable,
+                                                                                                    bestDecisionTrees,
+                                                                                                    dfDecisionTreesAccuracyOfTrainingData)
+
+# dfconfusionMatrixPredictionDecisionTreesWithTable <- data.frame(confusionMatrixPredictionDecisionTreesWithTable)
+# dfconfusionMatrixPredictionDecisionTreesWithTable$value_counts <- rbind("True Negative", "False Positive", "False Negative", "True Positive")
+# dfconfusionMatrixPredictionDecisionTreesWithTable$Technique <- bestDecisionTrees
+# dfconfusionMatrixPredictionDecisionTreesWithTable$Mean <- dfDecisionTreesAccuracyOfTrainingData$Mean[1]
 #--------------------------------
 View(dfconfusionMatrixPredictionDecisionTreesWithTable)
 # preparando dados de probabilidade predicao rna1 para arquivo .csv
 #------------------------------------------------
 dfaccuracyAndErrorRatePredictionDecisionTreesTemp <- data.frame(accuracyAndErrorRatePredictionDecisionTrees)
 
-dfaccuracyAndErrorRatePredictionDecisionTrees <- data.frame("Test_data_error_rate"=dfaccuracyAndErrorRatePredictionDecisionTreesTemp$Freq[1], "Test_data_accuracy"=dfaccuracyAndErrorRatePredictionDecisionTreesTemp$Freq[2])
-dfaccuracyAndErrorRatePredictionDecisionTrees$Training_data_accuracy <- dfC5AccuracyOfTrainingData$Mean[1]
-dfaccuracyAndErrorRatePredictionDecisionTrees$Technique <- bestDecisionTrees
+dfaccuracyAndErrorRatePredictionDecisionTrees <- dfAccuracyAndErrorRatePredictionTechniqueWithParameterColumns(dfaccuracyAndErrorRatePredictionDecisionTreesTemp,
+                                                                                                      dfDecisionTreesAccuracyOfTrainingData,
+                                                                                                      bestDecisionTrees)
+
+# dfaccuracyAndErrorRatePredictionDecisionTrees <- data.frame("Test_data_error_rate"=dfaccuracyAndErrorRatePredictionDecisionTreesTemp$Freq[1], "Test_data_accuracy"=dfaccuracyAndErrorRatePredictionDecisionTreesTemp$Freq[2])
+# dfaccuracyAndErrorRatePredictionDecisionTrees$Training_data_accuracy <- dfDecisionTreesAccuracyOfTrainingData$Mean[1]
+# dfaccuracyAndErrorRatePredictionDecisionTrees$Technique <- bestDecisionTrees
 #-----------------------------------------------------
 View(dfaccuracyAndErrorRatePredictionDecisionTrees)
 
@@ -1176,19 +1190,28 @@ if (bestTechniqueRandomForest[1] == "Random Forest 1 (rf)") {
 
 # preparando dados de predicao rf para arquivo .csv
 #--------------------------------
-dfconfusionMatrixPredictionRandomForestWithTable <- data.frame(confusionMatrixPredictionRandomForestWithTable)
-dfconfusionMatrixPredictionRandomForestWithTable$value_counts <- rbind("True Negative", "False Positive", "False Negative", "True Positive")
-dfconfusionMatrixPredictionRandomForestWithTable$Technique <- bestRandomForest
-dfconfusionMatrixPredictionRandomForestWithTable$Mean <- dfRandomForestAccuracyOfTrainingData$Mean[1]
+
+dfconfusionMatrixPredictionRandomForestWithTable <- dfConfusionMatrixPredictionTechniqueWithParameterColumns(confusionMatrixPredictionRandomForestWithTable,
+                                                                                                              bestRandomForest,
+                                                                                                              dfRandomForestAccuracyOfTrainingData)
+
+# dfconfusionMatrixPredictionRandomForestWithTable <- data.frame(confusionMatrixPredictionRandomForestWithTable)
+# dfconfusionMatrixPredictionRandomForestWithTable$value_counts <- rbind("True Negative", "False Positive", "False Negative", "True Positive")
+# dfconfusionMatrixPredictionRandomForestWithTable$Technique <- bestRandomForest
+# dfconfusionMatrixPredictionRandomForestWithTable$Mean <- dfRandomForestAccuracyOfTrainingData$Mean[1]
 #--------------------------------
 View(dfconfusionMatrixPredictionRandomForestWithTable)
 # preparando dados de probabilidade predicao rna1 para arquivo .csv
 #------------------------------------------------
 dfaccuracyAndErrorRatePredictionRandomForestTemp <- data.frame(accuracyAndErrorRatePredictionRandomForest)
 
-dfaccuracyAndErrorRatePredictionRandomForest <- data.frame("Test_data_error_rate"=dfaccuracyAndErrorRatePredictionRandomForestTemp$Freq[1], "Test_data_accuracy"=dfaccuracyAndErrorRatePredictionRandomForestTemp$Freq[2])
-dfaccuracyAndErrorRatePredictionRandomForest$Training_data_accuracy <- dfRandomForestAccuracyOfTrainingData$Mean[1]
-dfaccuracyAndErrorRatePredictionRandomForest$Technique <- bestRandomForest
+dfaccuracyAndErrorRatePredictionRandomForest <- dfAccuracyAndErrorRatePredictionTechniqueWithParameterColumns(dfaccuracyAndErrorRatePredictionRandomForestTemp,
+                                                                                                               dfRandomForestAccuracyOfTrainingData,
+                                                                                                               bestRandomForest)
+
+# dfaccuracyAndErrorRatePredictionRandomForest <- data.frame("Test_data_error_rate"=dfaccuracyAndErrorRatePredictionRandomForestTemp$Freq[1], "Test_data_accuracy"=dfaccuracyAndErrorRatePredictionRandomForestTemp$Freq[2])
+# dfaccuracyAndErrorRatePredictionRandomForest$Training_data_accuracy <- dfRandomForestAccuracyOfTrainingData$Mean[1]
+# dfaccuracyAndErrorRatePredictionRandomForest$Technique <- bestRandomForest
 #-----------------------------------------------------
 View(dfaccuracyAndErrorRatePredictionRandomForest)
 
@@ -1229,19 +1252,28 @@ if (bestTechniqueKnn[1] == "k-NN 1 (knn)") {
 
 # preparando dados de predicao knn para arquivo .csv
 #--------------------------------
-dfconfusionMatrixPredictionKnnWithTable <- data.frame(confusionMatrixPredictionKnnWithTable)
-dfconfusionMatrixPredictionKnnWithTable$value_counts <- rbind("True Negative", "False Positive", "False Negative", "True Positive")
-dfconfusionMatrixPredictionKnnWithTable$Technique <- bestKnn
-dfconfusionMatrixPredictionKnnWithTable$Mean <- dfKnnAccuracyOfTrainingData$Mean[1]
+
+dfconfusionMatrixPredictionKnnWithTable <- dfConfusionMatrixPredictionTechniqueWithParameterColumns(confusionMatrixPredictionKnnWithTable,
+                                                                                                             bestKnn,
+                                                                                                             dfKnnAccuracyOfTrainingData)
+
+# dfconfusionMatrixPredictionKnnWithTable <- data.frame(confusionMatrixPredictionKnnWithTable)
+# dfconfusionMatrixPredictionKnnWithTable$value_counts <- rbind("True Negative", "False Positive", "False Negative", "True Positive")
+# dfconfusionMatrixPredictionKnnWithTable$Technique <- bestKnn
+# dfconfusionMatrixPredictionKnnWithTable$Mean <- dfKnnAccuracyOfTrainingData$Mean[1]
 #--------------------------------
 View(dfconfusionMatrixPredictionKnnWithTable)
 # preparando dados de probabilidade predicao rna1 para arquivo .csv
 #------------------------------------------------
 dfaccuracyAndErrorRatePredictionKnnTemp <- data.frame(accuracyAndErrorRatePredictionKnn)
 
-dfaccuracyAndErrorRatePredictionKnn <- data.frame("Test_data_error_rate"=dfaccuracyAndErrorRatePredictionKnnTemp$Freq[1], "Test_data_accuracy"=dfaccuracyAndErrorRatePredictionKnnTemp$Freq[2])
-dfaccuracyAndErrorRatePredictionKnn$Training_data_accuracy <- dfKnnAccuracyOfTrainingData$Mean[1]
-dfaccuracyAndErrorRatePredictionKnn$Technique <- bestKnn
+dfaccuracyAndErrorRatePredictionKnn <- dfAccuracyAndErrorRatePredictionTechniqueWithParameterColumns(dfaccuracyAndErrorRatePredictionKnnTemp,
+                                                                                                              dfKnnAccuracyOfTrainingData,
+                                                                                                              bestKnn)
+
+# dfaccuracyAndErrorRatePredictionKnn <- data.frame("Test_data_error_rate"=dfaccuracyAndErrorRatePredictionKnnTemp$Freq[1], "Test_data_accuracy"=dfaccuracyAndErrorRatePredictionKnnTemp$Freq[2])
+# dfaccuracyAndErrorRatePredictionKnn$Training_data_accuracy <- dfKnnAccuracyOfTrainingData$Mean[1]
+# dfaccuracyAndErrorRatePredictionKnn$Technique <- bestKnn
 #-----------------------------------------------------
 View(dfaccuracyAndErrorRatePredictionKnn)
 
@@ -1283,19 +1315,27 @@ if (bestTechniqueNaiveBayes[1] == "Naive Bayes 1 (nb)") {
 
 # preparando dados de predicao nbayes2 para arquivo .csv
 #--------------------------------
-dfconfusionMatrixPredictionNaiveBayesWithTable <- data.frame(confusionMatrixPredictionNaiveBayesWithTable)
-dfconfusionMatrixPredictionNaiveBayesWithTable$value_counts <- rbind("True Negative", "False Positive", "False Negative", "True Positive")
-dfconfusionMatrixPredictionNaiveBayesWithTable$Technique <- bestNaiveBayes
-dfconfusionMatrixPredictionNaiveBayesWithTable$Mean <- dfNaiveBayesAccuracyOfTrainingData$Mean[1]
+dfconfusionMatrixPredictionNaiveBayesWithTable <- dfConfusionMatrixPredictionTechniqueWithParameterColumns(confusionMatrixPredictionNaiveBayesWithTable,
+                                                                                                    bestNaiveBayes,
+                                                                                                    dfNaiveBayesAccuracyOfTrainingData)
+
+# dfconfusionMatrixPredictionNaiveBayesWithTable <- data.frame(confusionMatrixPredictionNaiveBayesWithTable)
+# dfconfusionMatrixPredictionNaiveBayesWithTable$value_counts <- rbind("True Negative", "False Positive", "False Negative", "True Positive")
+# dfconfusionMatrixPredictionNaiveBayesWithTable$Technique <- bestNaiveBayes
+# dfconfusionMatrixPredictionNaiveBayesWithTable$Mean <- dfNaiveBayesAccuracyOfTrainingData$Mean[1]
 #--------------------------------
 View(dfconfusionMatrixPredictionNaiveBayesWithTable)
 # preparando dados de probabilidade predicao rna1 para arquivo .csv
 #------------------------------------------------
 dfaccuracyAndErrorRatePredictionNaiveBayesTemp <- data.frame(accuracyAndErrorRatePredictionNaiveBayes)
 
-dfaccuracyAndErrorRatePredictionNaiveBayes <- data.frame("Test_data_error_rate"=dfaccuracyAndErrorRatePredictionNaiveBayesTemp$Freq[1], "Test_data_accuracy"=dfaccuracyAndErrorRatePredictionNaiveBayesTemp$Freq[2])
-dfaccuracyAndErrorRatePredictionNaiveBayes$Training_data_accuracy <- dfNaiveBayesAccuracyOfTrainingData$Mean[1]
-dfaccuracyAndErrorRatePredictionNaiveBayes$Technique <- bestNaiveBayes
+dfaccuracyAndErrorRatePredictionNaiveBayes <- dfAccuracyAndErrorRatePredictionTechniqueWithParameterColumns(dfaccuracyAndErrorRatePredictionNaiveBayesTemp,
+                                                                                                     dfNaiveBayesAccuracyOfTrainingData,
+                                                                                                     bestNaiveBayes)
+
+# dfaccuracyAndErrorRatePredictionNaiveBayes <- data.frame("Test_data_error_rate"=dfaccuracyAndErrorRatePredictionNaiveBayesTemp$Freq[1], "Test_data_accuracy"=dfaccuracyAndErrorRatePredictionNaiveBayesTemp$Freq[2])
+# dfaccuracyAndErrorRatePredictionNaiveBayes$Training_data_accuracy <- dfNaiveBayesAccuracyOfTrainingData$Mean[1]
+# dfaccuracyAndErrorRatePredictionNaiveBayes$Technique <- bestNaiveBayes
 #-----------------------------------------------------
 View(dfaccuracyAndErrorRatePredictionNaiveBayes)
 
@@ -1305,31 +1345,46 @@ View(dfaccuracyAndErrorRatePredictionNaiveBayes)
 dfConfusionMatrixTechnicalPredictionWithTable <- rbind(dfconfusionMatrixPredictionRnaWithTable, dfconfusionMatrixPredictionSvmWithTable, dfconfusionMatrixPredictionCartWithTable, dfconfusionMatrixPredictionDecisionTreesWithTable, dfconfusionMatrixPredictionRandomForestWithTable, dfconfusionMatrixPredictionKnnWithTable, dfconfusionMatrixPredictionNaiveBayesWithTable)
 View(dfConfusionMatrixTechnicalPredictionWithTable)
 
-# # Crinado nova colunas no dataframe
-dfConfusionMatrixTechnicalPredictionWithTable$Seed <- seed
-dfConfusionMatrixTechnicalPredictionWithTable$Samples <- nrow(dfGenderVoice)
-dfConfusionMatrixTechnicalPredictionWithTable$Male_samples <- numberOfMaleClassSamples
-dfConfusionMatrixTechnicalPredictionWithTable$Female_samples <- numberOfFemaleClassSamples
-dfConfusionMatrixTechnicalPredictionWithTable$Data_division_method <- dataDivisionMethod
-dfConfusionMatrixTechnicalPredictionWithTable$Training_samples_80p <- nrow(trainingData)
-dfConfusionMatrixTechnicalPredictionWithTable$Training_samples_Female <- numberOfSamplesFemaleTrainingData
-dfConfusionMatrixTechnicalPredictionWithTable$Training_samples_Male <- numberOfSamplesMaleTrainingData
-dfConfusionMatrixTechnicalPredictionWithTable$Test_samples_20p <- nrow(testData)
-dfConfusionMatrixTechnicalPredictionWithTable$Test_samples_Female <- numberOfSamplesFemaleTestData
-dfConfusionMatrixTechnicalPredictionWithTable$Test_samples_Male <- numberOfSamplesMaleTestData
-dfConfusionMatrixTechnicalPredictionWithTable$Operational_System <- operationalSystem
-
-#alterando ordem das colunas do dataframe, a coluna "Technique" e colocada como primeira coluna
-dfConfusionMatrixTechnicalPredictionWithTable <- dfConfusionMatrixTechnicalPredictionWithTable %>% select(Technique, everything())
-
 # Ordenando o resultado
 dfConfusionMatrixTechnicalPredictionWithTable <- dfConfusionMatrixTechnicalPredictionWithTable[order(dfConfusionMatrixTechnicalPredictionWithTable$Mean, decreasing=TRUE), ]
 
 # removendo coluna "Mean" foi usada para ordenar os resultados da melhor tecnica
-dfConfusionMatrixTechnicalPredictionWithTable$Mean <- NULL
+dfConfusionMatrixTechnicalPredictionWithTable$Mean_Accuracy <- NULL
+
+# Adicionando colunas com os prametros usados para o treinamento
+dfConfusionMatrixTechnicalPredictionWithTable <- addTrainingParameterColumns(dfConfusionMatrixTechnicalPredictionWithTable, 
+                                                                  seed, 
+                                                                  dfGenderVoice, 
+                                                                  numberOfFemaleClassSamples, 
+                                                                  numberOfMaleClassSamples, 
+                                                                  dataDivisionMethod, 
+                                                                  trainingData, 
+                                                                  numberOfSamplesFemaleTrainingData, 
+                                                                  numberOfSamplesMaleTrainingData, 
+                                                                  testData, 
+                                                                  numberOfSamplesFemaleTestData, 
+                                                                  numberOfSamplesMaleTestData, 
+                                                                  operationalSystem)
+
+
+
+
+# dfConfusionMatrixTechnicalPredictionWithTable$Seed <- seed
+# dfConfusionMatrixTechnicalPredictionWithTable$Samples <- nrow(dfGenderVoice)
+# dfConfusionMatrixTechnicalPredictionWithTable$Male_samples <- numberOfMaleClassSamples
+# dfConfusionMatrixTechnicalPredictionWithTable$Female_samples <- numberOfFemaleClassSamples
+# dfConfusionMatrixTechnicalPredictionWithTable$Data_division_method <- dataDivisionMethod
+# dfConfusionMatrixTechnicalPredictionWithTable$Training_samples_80p <- nrow(trainingData)
+# dfConfusionMatrixTechnicalPredictionWithTable$Training_samples_Female <- numberOfSamplesFemaleTrainingData
+# dfConfusionMatrixTechnicalPredictionWithTable$Training_samples_Male <- numberOfSamplesMaleTrainingData
+# dfConfusionMatrixTechnicalPredictionWithTable$Test_samples_20p <- nrow(testData)
+# dfConfusionMatrixTechnicalPredictionWithTable$Test_samples_Female <- numberOfSamplesFemaleTestData
+# dfConfusionMatrixTechnicalPredictionWithTable$Test_samples_Male <- numberOfSamplesMaleTestData
+# dfConfusionMatrixTechnicalPredictionWithTable$Operational_System <- operationalSystem
+
 
 #Adicionando linha Na(Not Available) no dataframe
-dfConfusionMatrixTechnicalPredictionWithTable <- addNaLineAtTheEndOfTheDataframe(dfConfusionMatrixTechnicalPredictionWithTable)
+#dfConfusionMatrixTechnicalPredictionWithTable <- addNaLineAtTheEndOfTheDataframe(dfConfusionMatrixTechnicalPredictionWithTable)
 
 # # Definindo o caminho a ser salvo o arquivo confusionMatrixTechnicalPredictionWithTable.csv
 filePathResulteHitsAndMissesTechnicalPrediction <- joinPathAndFilename(pathToSaveFile, "confusionMatrixTechnicalPredictionWithTable.csv")
@@ -1349,28 +1404,44 @@ view(dfConfusionMatrixTechnicalPredictionWithTableView)
 dfAccuracyAndErrorRateTechnicalPrediction <- rbind(dfaccuracyAndErrorRatePredictionRna, dfaccuracyAndErrorRatePredictionSvm, dfaccuracyAndErrorRatePredictionCart, dfaccuracyAndErrorRatePredictionDecisionTrees, dfaccuracyAndErrorRatePredictionRandomForest, dfaccuracyAndErrorRatePredictionKnn, dfaccuracyAndErrorRatePredictionNaiveBayes)
 View(dfAccuracyAndErrorRateTechnicalPrediction)
 
-# # Crinado nova colunas no dataframe
-dfAccuracyAndErrorRateTechnicalPrediction$Seed <- seed
-dfAccuracyAndErrorRateTechnicalPrediction$Samples <- nrow(dfGenderVoice)
-dfAccuracyAndErrorRateTechnicalPrediction$Male_samples <- numberOfMaleClassSamples
-dfAccuracyAndErrorRateTechnicalPrediction$Female_samples <- numberOfFemaleClassSamples
-dfAccuracyAndErrorRateTechnicalPrediction$Data_division_method <- dataDivisionMethod
-dfAccuracyAndErrorRateTechnicalPrediction$Training_samples_80p <- nrow(trainingData)
-dfAccuracyAndErrorRateTechnicalPrediction$Training_samples_Female <- numberOfSamplesFemaleTrainingData
-dfAccuracyAndErrorRateTechnicalPrediction$Training_samples_Male <- numberOfSamplesMaleTrainingData
-dfAccuracyAndErrorRateTechnicalPrediction$Test_samples_20p <- nrow(testData)
-dfAccuracyAndErrorRateTechnicalPrediction$Test_samples_Female <- numberOfSamplesFemaleTestData
-dfAccuracyAndErrorRateTechnicalPrediction$Test_samples_Male <- numberOfSamplesMaleTestData
-dfAccuracyAndErrorRateTechnicalPrediction$Operational_System <- operationalSystem
-
-#alterando ordem das colunas do dataframe, a coluna "Technique" e colocada como primeira coluna
-dfAccuracyAndErrorRateTechnicalPrediction <- dfAccuracyAndErrorRateTechnicalPrediction %>% select(Technique, everything())
-
 # Ordenando o resultado pela acuracia de dados de teste
 dfAccuracyAndErrorRateTechnicalPrediction <- dfAccuracyAndErrorRateTechnicalPrediction[order(dfAccuracyAndErrorRateTechnicalPrediction$Test_data_accuracy, decreasing=TRUE), ]
 
+# Adicionando colunas com os prametros usados para o treinamento
+dfAccuracyAndErrorRateTechnicalPrediction <- addTrainingParameterColumns(dfAccuracyAndErrorRateTechnicalPrediction, 
+                                                                             seed, 
+                                                                             dfGenderVoice, 
+                                                                             numberOfFemaleClassSamples, 
+                                                                             numberOfMaleClassSamples, 
+                                                                             dataDivisionMethod, 
+                                                                             trainingData, 
+                                                                             numberOfSamplesFemaleTrainingData, 
+                                                                             numberOfSamplesMaleTrainingData, 
+                                                                             testData, 
+                                                                             numberOfSamplesFemaleTestData, 
+                                                                             numberOfSamplesMaleTestData, 
+                                                                             operationalSystem)
+
+
+# # Crinado nova colunas no dataframe
+# dfAccuracyAndErrorRateTechnicalPrediction$Seed <- seed
+# dfAccuracyAndErrorRateTechnicalPrediction$Samples <- nrow(dfGenderVoice)
+# dfAccuracyAndErrorRateTechnicalPrediction$Male_samples <- numberOfMaleClassSamples
+# dfAccuracyAndErrorRateTechnicalPrediction$Female_samples <- numberOfFemaleClassSamples
+# dfAccuracyAndErrorRateTechnicalPrediction$Data_division_method <- dataDivisionMethod
+# dfAccuracyAndErrorRateTechnicalPrediction$Training_samples_80p <- nrow(trainingData)
+# dfAccuracyAndErrorRateTechnicalPrediction$Training_samples_Female <- numberOfSamplesFemaleTrainingData
+# dfAccuracyAndErrorRateTechnicalPrediction$Training_samples_Male <- numberOfSamplesMaleTrainingData
+# dfAccuracyAndErrorRateTechnicalPrediction$Test_samples_20p <- nrow(testData)
+# dfAccuracyAndErrorRateTechnicalPrediction$Test_samples_Female <- numberOfSamplesFemaleTestData
+# dfAccuracyAndErrorRateTechnicalPrediction$Test_samples_Male <- numberOfSamplesMaleTestData
+# dfAccuracyAndErrorRateTechnicalPrediction$Operational_System <- operationalSystem
+
+#alterando ordem das colunas do dataframe, a coluna "Technique" e colocada como primeira coluna
+#dfAccuracyAndErrorRateTechnicalPrediction <- dfAccuracyAndErrorRateTechnicalPrediction %>% select(Technique, everything())
+
 # Adicionando linha Na(Not Available) no dataframe
-dfAccuracyAndErrorRateTechnicalPrediction <- addNaLineAtTheEndOfTheDataframe(dfAccuracyAndErrorRateTechnicalPrediction)
+#dfAccuracyAndErrorRateTechnicalPrediction <- addNaLineAtTheEndOfTheDataframe(dfAccuracyAndErrorRateTechnicalPrediction)
 
 # Definindo o caminho a ser salvo o arquivo accuracyAndErrorRateTechnicalPrediction.csv
 filePathAccuracyHitsAndMissesTechnicalPrediction <- joinPathAndFilename(pathToSaveFile, "accuracyAndErrorRateTechnicalPrediction.csv")
@@ -1393,6 +1464,7 @@ view(dfAccuracyAndErrorRateTechnicalPredictionView)
 
 # ********** Matriz de confusao - estatisticas dos resultados da predicao ********** #
 
+# Alterando type de "testDataLabelColumn" de "character" para "factor", para funcionar na funcao confusionMatrix()
 testDataLabelColumn <- factor(testDataLabelColumn)
 
 confusionMatrixPredictionRna <- confusionMatrix(predictionRna, testDataLabelColumn)
@@ -1423,7 +1495,7 @@ confusionMatrixPredictionRna$overall[1]
 dfConfusionMatrixPredictionRna <- data.frame(confusionMatrixPredictionRna$table)
 dfConfusionMatrixPredictionRna$Technique <- bestRna
 dfConfusionMatrixPredictionRna$Accuracy <- confusionMatrixPredictionRna$overall[1]
-
+#View(dfConfusionMatrixPredictionRna)
 dfConfusionMatrixPredictionSvm <- data.frame(confusionMatrixPredictionSvm$table)
 dfConfusionMatrixPredictionSvm$Technique <- bestSvm
 dfConfusionMatrixPredictionSvm$Accuracy <- confusionMatrixPredictionSvm$overall[1]
@@ -1450,24 +1522,43 @@ dfConfusionMatrixPredictionNaiveBayes$Accuracy <- confusionMatrixPredictionNaive
 
 dfConfusionMatrixPredictionTechniques <- rbind(dfConfusionMatrixPredictionRna, dfConfusionMatrixPredictionSvm, dfConfusionMatrixPredictionCart, dfConfusionMatrixpredictionDecisionTrees, dfConfusionMatrixPredictionRandomForest, dfConfusionMatrixPredictionKnn, dfConfusionMatrixPredictionNaiveBayes)
 View(dfConfusionMatrixPredictionTechniques)
-# Crinado nova colunas no dataframe
-dfConfusionMatrixPredictionTechniques$Seed <- seed
-dfConfusionMatrixPredictionTechniques$Samples <- nrow(dfGenderVoice)
-dfConfusionMatrixPredictionTechniques$Male_samples <- numberOfMaleClassSamples
-dfConfusionMatrixPredictionTechniques$Female_samples <- numberOfFemaleClassSamples
-dfConfusionMatrixPredictionTechniques$Data_division_method <- dataDivisionMethod
-dfConfusionMatrixPredictionTechniques$Training_samples_80p <- nrow(trainingData)
-dfConfusionMatrixPredictionTechniques$Training_samples_Female <- numberOfSamplesFemaleTrainingData
-dfConfusionMatrixPredictionTechniques$Training_samples_Male <- numberOfSamplesMaleTrainingData
-dfConfusionMatrixPredictionTechniques$Test_samples_20p <- nrow(testData)
-dfConfusionMatrixPredictionTechniques$Test_samples_Female <- numberOfSamplesFemaleTestData
-dfConfusionMatrixPredictionTechniques$Test_samples_Male <- numberOfSamplesMaleTestData
 
 # Ordenar linhas com base na coluna Accuracy
 dfConfusionMatrixPredictionTechniques <- dfConfusionMatrixPredictionTechniques[order(dfConfusionMatrixPredictionTechniques$Accuracy, decreasing=TRUE), ]
 
+# removendo coluna "Mean" foi usada para ordenar os resultados da melhor tecnica
+dfConfusionMatrixPredictionTechniques$Accuracy <- NULL
+
+# Adicionando colunas com os prametros usados para o treinamento
+dfConfusionMatrixPredictionTechniques <- addTrainingParameterColumns(dfConfusionMatrixPredictionTechniques, 
+                                                                         seed, 
+                                                                         dfGenderVoice, 
+                                                                         numberOfFemaleClassSamples, 
+                                                                         numberOfMaleClassSamples, 
+                                                                         dataDivisionMethod, 
+                                                                         trainingData, 
+                                                                         numberOfSamplesFemaleTrainingData, 
+                                                                         numberOfSamplesMaleTrainingData, 
+                                                                         testData, 
+                                                                         numberOfSamplesFemaleTestData, 
+                                                                         numberOfSamplesMaleTestData, 
+                                                                         operationalSystem)
+
+# Crinado nova colunas no dataframe
+# dfConfusionMatrixPredictionTechniques$Seed <- seed
+# dfConfusionMatrixPredictionTechniques$Samples <- nrow(dfGenderVoice)
+# dfConfusionMatrixPredictionTechniques$Male_samples <- numberOfMaleClassSamples
+# dfConfusionMatrixPredictionTechniques$Female_samples <- numberOfFemaleClassSamples
+# dfConfusionMatrixPredictionTechniques$Data_division_method <- dataDivisionMethod
+# dfConfusionMatrixPredictionTechniques$Training_samples_80p <- nrow(trainingData)
+# dfConfusionMatrixPredictionTechniques$Training_samples_Female <- numberOfSamplesFemaleTrainingData
+# dfConfusionMatrixPredictionTechniques$Training_samples_Male <- numberOfSamplesMaleTrainingData
+# dfConfusionMatrixPredictionTechniques$Test_samples_20p <- nrow(testData)
+# dfConfusionMatrixPredictionTechniques$Test_samples_Female <- numberOfSamplesFemaleTestData
+# dfConfusionMatrixPredictionTechniques$Test_samples_Male <- numberOfSamplesMaleTestData
+
 # Adicionando linha Na(Not Available) no dataframe
-dfConfusionMatrixPredictionTechniques <- addNaLineAtTheEndOfTheDataframe(dfConfusionMatrixPredictionTechniques)
+#dfConfusionMatrixPredictionTechniques <- addNaLineAtTheEndOfTheDataframe(dfConfusionMatrixPredictionTechniques)
 
 # Definindo o caminho a ser salvo o arquivo confusionMatrixPredictionTechniques.csv
 filePathTechniquePredictionConfusionMatrix <- joinPathAndFilename(pathToSaveFile, "confusionMatrixPredictionTechniques.csv")
@@ -1484,7 +1575,7 @@ confusionMatrixPredictionRna$overall
 confusionMatrixPredictionRna$byClass
 
 # Informacoes de estatistica(acuracia,...) dos dados de teste - matriz de confusao
-# Pegando informacoes para resultadoMatrizConfusaoEstatist.csv
+# Pegando informacoes para accuracyAndOtherInformationTechniquesPrediction.csv
 #-----------------------------------------------------------------
 dfAccuracyAndOtherInformationPredictionRna <- data.frame(cbind(t(confusionMatrixPredictionRna$overall),t(confusionMatrixPredictionRna$byClass)))
 dfAccuracyAndOtherInformationPredictionSvm <- data.frame(cbind(t(confusionMatrixPredictionSvm$overall),t(confusionMatrixPredictionSvm$byClass)))
@@ -1500,27 +1591,40 @@ View(dfAccuracyAndOtherInformationTechniquesPrediction)
 # Criando coluna Technique
 dfAccuracyAndOtherInformationTechniquesPrediction$Technique <- c(bestRna, bestSvm, bestCart, bestDecisionTrees, bestRandomForest, bestKnn, bestNaiveBayes)
 
+#  alterando ordem da coluna "Technique" e adicionando colunas com os prametros usados para o treinamento
+dfAccuracyAndOtherInformationTechniquesPrediction <- addTrainingParameterColumns(dfAccuracyAndOtherInformationTechniquesPrediction, 
+                                                                     seed, 
+                                                                     dfGenderVoice, 
+                                                                     numberOfFemaleClassSamples, 
+                                                                     numberOfMaleClassSamples, 
+                                                                     dataDivisionMethod, 
+                                                                     trainingData, 
+                                                                     numberOfSamplesFemaleTrainingData, 
+                                                                     numberOfSamplesMaleTrainingData, 
+                                                                     testData, 
+                                                                     numberOfSamplesFemaleTestData, 
+                                                                     numberOfSamplesMaleTestData, 
+                                                                     operationalSystem)
+
 # Crinado nova colunas no dataframe
-dfAccuracyAndOtherInformationTechniquesPrediction$Seed <- seed
-dfAccuracyAndOtherInformationTechniquesPrediction$Samples <- nrow(dfGenderVoice)
-dfAccuracyAndOtherInformationTechniquesPrediction$Male_samples <- numberOfMaleClassSamples
-dfAccuracyAndOtherInformationTechniquesPrediction$Female_samples <- numberOfFemaleClassSamples
-dfAccuracyAndOtherInformationTechniquesPrediction$Data_division_method <- dataDivisionMethod
-dfAccuracyAndOtherInformationTechniquesPrediction$Training_samples_80p <- nrow(trainingData)
-dfAccuracyAndOtherInformationTechniquesPrediction$Training_samples_Female <- numberOfSamplesFemaleTrainingData
-dfAccuracyAndOtherInformationTechniquesPrediction$Training_samples_Male <- numberOfSamplesMaleTrainingData
-dfAccuracyAndOtherInformationTechniquesPrediction$Test_samples_20p <- nrow(testData)
-dfAccuracyAndOtherInformationTechniquesPrediction$Test_samples_Female <- numberOfSamplesFemaleTestData
-dfAccuracyAndOtherInformationTechniquesPrediction$Test_samples_Male <- numberOfSamplesMaleTestData
+# dfAccuracyAndOtherInformationTechniquesPrediction$Seed <- seed
+# dfAccuracyAndOtherInformationTechniquesPrediction$Samples <- nrow(dfGenderVoice)
+# dfAccuracyAndOtherInformationTechniquesPrediction$Male_samples <- numberOfMaleClassSamples
+# dfAccuracyAndOtherInformationTechniquesPrediction$Female_samples <- numberOfFemaleClassSamples
+# dfAccuracyAndOtherInformationTechniquesPrediction$Data_division_method <- dataDivisionMethod
+# dfAccuracyAndOtherInformationTechniquesPrediction$Training_samples_80p <- nrow(trainingData)
+# dfAccuracyAndOtherInformationTechniquesPrediction$Training_samples_Female <- numberOfSamplesFemaleTrainingData
+# dfAccuracyAndOtherInformationTechniquesPrediction$Training_samples_Male <- numberOfSamplesMaleTrainingData
+# dfAccuracyAndOtherInformationTechniquesPrediction$Test_samples_20p <- nrow(testData)
+# dfAccuracyAndOtherInformationTechniquesPrediction$Test_samples_Female <- numberOfSamplesFemaleTestData
+# dfAccuracyAndOtherInformationTechniquesPrediction$Test_samples_Male <- numberOfSamplesMaleTestData
 
 
-#alterando ordem das colunas
-dfAccuracyAndOtherInformationTechniquesPrediction <- dfAccuracyAndOtherInformationTechniquesPrediction %>% select(Technique, everything())
-
+# Ordenar linhas com base na coluna Accuracy
 dfAccuracyAndOtherInformationTechniquesPrediction <- dfAccuracyAndOtherInformationTechniquesPrediction[order(dfAccuracyAndOtherInformationTechniquesPrediction$Accuracy, decreasing=TRUE), ]
 
 #Adicionando linha Na no dataframe
-dfAccuracyAndOtherInformationTechniquesPrediction <- addNaLineAtTheEndOfTheDataframe(dfAccuracyAndOtherInformationTechniquesPrediction)
+#dfAccuracyAndOtherInformationTechniquesPrediction <- addNaLineAtTheEndOfTheDataframe(dfAccuracyAndOtherInformationTechniquesPrediction)
 
 # Definindo o caminho a ser salvo o arquivo accuracyAndOtherInformationTechniquesPrediction.csv
 filePathAccuracyAndOtherInformationTechniquePrediction <- joinPathAndFilename(pathToSaveFile, "accuracyAndOtherInformationTechniquesPrediction.csv")
