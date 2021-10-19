@@ -350,7 +350,27 @@ dfConfusionMatrixPredictionTechniqueWithParameterColumns <- function(confusionMa
   dataFrame <- data.frame(confusionMatrixPredictionTechniqueWithTable)
   dataFrame$value_counts <- rbind("True Negative", "False Negative", "False Positive", "True Positive") 
   dataFrame$Technique <-  bestTechnique
-  dataFrame$Mean_Accuracy <- dfTechniqueAccuracyOfTrainingData$Mean_Accuracy[1]
+  dataFrame$Training_data_accuracy <- dfTechniqueAccuracyOfTrainingData$Mean_Accuracy[1]
+  
+  #alterando ordem das colunas do dataframe, a coluna "Technique" e colocada como primeira coluna
+  dataFrame <- dataFrame %>% select(Technique, everything())
+  
+  # chamando funcao para adicionar uma linha Na(Not Available) no dataframe
+  #dataFrame <- addNaLineAtTheEndOfTheDataframe(dataFrame)
+  
+  return(dataFrame)
+}
+
+# Funcao para adicionar colunas com parametros da analise de matriz de confusao
+dfConfusionMatrixPredictionTechniqueWithParameterColumns2 <- function(confusionMatrixPredictionTechnique, 
+                                                                     bestTechnique,
+                                                                     dfTechniqueAccuracyOfTrainingData){
+  
+  dataFrame <- data.frame(confusionMatrixPredictionTechnique$table)
+  dataFrame$value_counts <- rbind("True Negative", "False Negative", "False Positive", "True Positive") 
+  dataFrame$Technique <-  bestTechnique
+  dataFrame$Test_data_accuracy <- confusionMatrixPredictionTechnique$overall[1]
+  dataFrame$Training_data_accuracy <- dfTechniqueAccuracyOfTrainingData$Mean_Accuracy[1]
   
   #alterando ordem das colunas do dataframe, a coluna "Technique" e colocada como primeira coluna
   dataFrame <- dataFrame %>% select(Technique, everything())
@@ -1340,16 +1360,17 @@ dfaccuracyAndErrorRatePredictionNaiveBayes <- dfAccuracyAndErrorRatePredictionTe
 View(dfaccuracyAndErrorRatePredictionNaiveBayes)
 
 
-# criando arquivo resulteHitsAndMissesPrediction.csv
+# criando arquivo confusionMatrixTechnicalPredictionWithTable.csv
+# Pegando o resultado de cada matriz de confusão de cada tecnica
 #---------------------------------------
 dfConfusionMatrixTechnicalPredictionWithTable <- rbind(dfconfusionMatrixPredictionRnaWithTable, dfconfusionMatrixPredictionSvmWithTable, dfconfusionMatrixPredictionCartWithTable, dfconfusionMatrixPredictionDecisionTreesWithTable, dfconfusionMatrixPredictionRandomForestWithTable, dfconfusionMatrixPredictionKnnWithTable, dfconfusionMatrixPredictionNaiveBayesWithTable)
 View(dfConfusionMatrixTechnicalPredictionWithTable)
 
 # Ordenando o resultado
-dfConfusionMatrixTechnicalPredictionWithTable <- dfConfusionMatrixTechnicalPredictionWithTable[order(dfConfusionMatrixTechnicalPredictionWithTable$Mean, decreasing=TRUE), ]
+dfConfusionMatrixTechnicalPredictionWithTable <- dfConfusionMatrixTechnicalPredictionWithTable[order(dfConfusionMatrixTechnicalPredictionWithTable$Training_data_accuracy, decreasing=TRUE), ]
 
 # removendo coluna "Mean" foi usada para ordenar os resultados da melhor tecnica
-dfConfusionMatrixTechnicalPredictionWithTable$Mean_Accuracy <- NULL
+#dfConfusionMatrixTechnicalPredictionWithTable$Mean_Accuracy <- NULL
 
 # Adicionando colunas com os prametros usados para o treinamento
 dfConfusionMatrixTechnicalPredictionWithTable <- addTrainingParameterColumns(dfConfusionMatrixTechnicalPredictionWithTable, 
@@ -1400,7 +1421,7 @@ view(dfConfusionMatrixTechnicalPredictionWithTableView)
 
 # criando arquivo accuracyAndErrorRateTechnicalPrediction.csv
 #-------------------------------------------------
-
+# Pegando o resultado de cada acuracia e taxa de erro de cada tecnica
 dfAccuracyAndErrorRateTechnicalPrediction <- rbind(dfaccuracyAndErrorRatePredictionRna, dfaccuracyAndErrorRatePredictionSvm, dfaccuracyAndErrorRatePredictionCart, dfaccuracyAndErrorRatePredictionDecisionTrees, dfaccuracyAndErrorRatePredictionRandomForest, dfaccuracyAndErrorRatePredictionKnn, dfaccuracyAndErrorRatePredictionNaiveBayes)
 View(dfAccuracyAndErrorRateTechnicalPrediction)
 
@@ -1470,7 +1491,7 @@ testDataLabelColumn <- factor(testDataLabelColumn)
 confusionMatrixPredictionRna <- confusionMatrix(predictionRna, testDataLabelColumn)
 confusionMatrixPredictionSvm <- confusionMatrix(predictionSvm, testDataLabelColumn)
 confusionMatrixPredictionCart <- confusionMatrix(predictionCart, testDataLabelColumn)
-confusionMatrixpredictionDecisionTrees <- confusionMatrix(predictionDecisionTrees, testDataLabelColumn)
+confusionMatrixPredictionDecisionTrees <- confusionMatrix(predictionDecisionTrees, testDataLabelColumn)
 confusionMatrixPredictionRandomForest <- confusionMatrix(predictionRandomForest, testDataLabelColumn)
 confusionMatrixPredictionKnn <- confusionMatrix(predictionKnn, testDataLabelColumn)
 confusionMatrixPredictionNaiveBayes <- confusionMatrix(predictionNaiveBayes, testDataLabelColumn)
@@ -1479,7 +1500,7 @@ confusionMatrixPredictionNaiveBayes <- confusionMatrix(predictionNaiveBayes, tes
 confusionMatrixPredictionRna
 confusionMatrixPredictionSvm
 confusionMatrixPredictionCart
-confusionMatrixpredictionDecisionTrees
+confusionMatrixPredictionDecisionTrees
 confusionMatrixPredictionRandomForest
 confusionMatrixPredictionKnn
 confusionMatrixPredictionNaiveBayes
@@ -1492,39 +1513,70 @@ confusionMatrixPredictionRna$overall[1]
 # Pegando informacoes para confusionMatrixPredictionResult.csv
 #--------------------------------------------------------------
 
-dfConfusionMatrixPredictionRna <- data.frame(confusionMatrixPredictionRna$table)
-dfConfusionMatrixPredictionRna$Technique <- bestRna
-dfConfusionMatrixPredictionRna$Accuracy <- confusionMatrixPredictionRna$overall[1]
-#View(dfConfusionMatrixPredictionRna)
-dfConfusionMatrixPredictionSvm <- data.frame(confusionMatrixPredictionSvm$table)
-dfConfusionMatrixPredictionSvm$Technique <- bestSvm
-dfConfusionMatrixPredictionSvm$Accuracy <- confusionMatrixPredictionSvm$overall[1]
+#dfConfusionMatrixPredictionRna <- data.frame(confusionMatrixPredictionRna$table)
 
-dfConfusionMatrixPredictionCart <- data.frame(confusionMatrixPredictionCart$table)
-dfConfusionMatrixPredictionCart$Technique <- bestCart
-dfConfusionMatrixPredictionCart$Accuracy <- confusionMatrixPredictionCart$overall[1]
 
-dfConfusionMatrixpredictionDecisionTrees <- data.frame(confusionMatrixpredictionDecisionTrees$table)
-dfConfusionMatrixpredictionDecisionTrees$Technique <- bestDecisionTrees
-dfConfusionMatrixpredictionDecisionTrees$Accuracy <- confusionMatrixpredictionDecisionTrees$overall[1]
+dfConfusionMatrixPredictionRna <- dfConfusionMatrixPredictionTechniqueWithParameterColumns2(confusionMatrixPredictionRna, 
+                                                                                            bestRna,
+                                                                                            dfRnaAccuracyOfTrainingData)
+#dfConfusionMatrixPredictionRna$Technique <- bestRna
+#dfConfusionMatrixPredictionRna$Test_data_accuracy <- confusionMatrixPredictionRna$overall[1]
+View(dfConfusionMatrixPredictionRna)
 
-dfConfusionMatrixPredictionRandomForest <- data.frame(confusionMatrixPredictionRandomForest$table)
-dfConfusionMatrixPredictionRandomForest$Technique <- bestRandomForest
-dfConfusionMatrixPredictionRandomForest$Accuracy <- confusionMatrixPredictionRandomForest$overall[1]
+dfConfusionMatrixPredictionSvm <- dfConfusionMatrixPredictionTechniqueWithParameterColumns2(confusionMatrixPredictionSvm, 
+                                                                                            bestSvm,
+                                                                                            dfSvmAccuracyOfTrainingData)
+# dfConfusionMatrixPredictionSvm <- data.frame(confusionMatrixPredictionSvm$table)
+# dfConfusionMatrixPredictionSvm$Technique <- bestSvm
+# dfConfusionMatrixPredictionSvm$Accuracy <- confusionMatrixPredictionSvm$overall[1]
+View(dfConfusionMatrixPredictionSvm)
 
-dfConfusionMatrixPredictionKnn <- data.frame(confusionMatrixPredictionKnn$table)
-dfConfusionMatrixPredictionKnn$Technique <- bestKnn
-dfConfusionMatrixPredictionKnn$Accuracy <- confusionMatrixPredictionKnn$overall[1]
+dfConfusionMatrixPredictionCart <- dfConfusionMatrixPredictionTechniqueWithParameterColumns2(confusionMatrixPredictionCart, 
+                                                                                            bestCart,
+                                                                                            dfCartAccuracyOfTrainingData)
+# dfConfusionMatrixPredictionCart <- data.frame(confusionMatrixPredictionCart$table)
+# dfConfusionMatrixPredictionCart$Technique <- bestCart
+# dfConfusionMatrixPredictionCart$Accuracy <- confusionMatrixPredictionCart$overall[1]
+View(dfConfusionMatrixPredictionCart)
 
-dfConfusionMatrixPredictionNaiveBayes <- data.frame(confusionMatrixPredictionNaiveBayes$table)
-dfConfusionMatrixPredictionNaiveBayes$Technique <- bestNaiveBayes
-dfConfusionMatrixPredictionNaiveBayes$Accuracy <- confusionMatrixPredictionNaiveBayes$overall[1]
+dfConfusionMatrixPredictionDecisionTrees <- dfConfusionMatrixPredictionTechniqueWithParameterColumns2(confusionMatrixPredictionDecisionTrees, 
+                                                                                             bestDecisionTrees,
+                                                                                             dfDecisionTreesAccuracyOfTrainingData)
+# dfConfusionMatrixpredictionDecisionTrees <- data.frame(confusionMatrixpredictionDecisionTrees$table)
+# dfConfusionMatrixpredictionDecisionTrees$Technique <- bestDecisionTrees
+# dfConfusionMatrixpredictionDecisionTrees$Accuracy <- confusionMatrixpredictionDecisionTrees$overall[1]
+View(dfConfusionMatrixPredictionDecisionTrees)
 
-dfConfusionMatrixPredictionTechniques <- rbind(dfConfusionMatrixPredictionRna, dfConfusionMatrixPredictionSvm, dfConfusionMatrixPredictionCart, dfConfusionMatrixpredictionDecisionTrees, dfConfusionMatrixPredictionRandomForest, dfConfusionMatrixPredictionKnn, dfConfusionMatrixPredictionNaiveBayes)
+dfConfusionMatrixPredictionRandomForest <- dfConfusionMatrixPredictionTechniqueWithParameterColumns2(confusionMatrixPredictionRandomForest, 
+                                                                                                      bestRandomForest,
+                                                                                                      dfRandomForestAccuracyOfTrainingData)
+# dfConfusionMatrixPredictionRandomForest <- data.frame(confusionMatrixPredictionRandomForest$table)
+# dfConfusionMatrixPredictionRandomForest$Technique <- bestRandomForest
+# dfConfusionMatrixPredictionRandomForest$Accuracy <- confusionMatrixPredictionRandomForest$overall[1]
+View(dfConfusionMatrixPredictionRandomForest)
+
+dfConfusionMatrixPredictionKnn <- dfConfusionMatrixPredictionTechniqueWithParameterColumns2(confusionMatrixPredictionKnn, 
+                                                                                                     bestKnn,
+                                                                                                     dfKnnAccuracyOfTrainingData)
+# dfConfusionMatrixPredictionKnn <- data.frame(confusionMatrixPredictionKnn$table)
+# dfConfusionMatrixPredictionKnn$Technique <- bestKnn
+# dfConfusionMatrixPredictionKnn$Accuracy <- confusionMatrixPredictionKnn$overall[1]
+View(dfConfusionMatrixPredictionKnn)
+
+dfConfusionMatrixPredictionNaiveBayes <- dfConfusionMatrixPredictionTechniqueWithParameterColumns2(confusionMatrixPredictionNaiveBayes, 
+                                                                                            bestNaiveBayes,
+                                                                                            dfNaiveBayesAccuracyOfTrainingData)
+# dfConfusionMatrixPredictionNaiveBayes <- data.frame(confusionMatrixPredictionNaiveBayes$table)
+# dfConfusionMatrixPredictionNaiveBayes$Technique <- bestNaiveBayes
+# dfConfusionMatrixPredictionNaiveBayes$Accuracy <- confusionMatrixPredictionNaiveBayes$overall[1]
+View(dfConfusionMatrixPredictionNaiveBayes)
+
+# Pegando o resultado de cada mariz de confusao de cada tecnica e juntando em um unico dataframe
+dfConfusionMatrixPredictionTechniques <- rbind(dfConfusionMatrixPredictionRna, dfConfusionMatrixPredictionSvm, dfConfusionMatrixPredictionCart, dfConfusionMatrixPredictionDecisionTrees, dfConfusionMatrixPredictionRandomForest, dfConfusionMatrixPredictionKnn, dfConfusionMatrixPredictionNaiveBayes)
 View(dfConfusionMatrixPredictionTechniques)
 
-# Ordenar linhas com base na coluna Accuracy
-dfConfusionMatrixPredictionTechniques <- dfConfusionMatrixPredictionTechniques[order(dfConfusionMatrixPredictionTechniques$Accuracy, decreasing=TRUE), ]
+# Ordenar linhas com base na coluna Accuracy dos dados de teste
+dfConfusionMatrixPredictionTechniques <- dfConfusionMatrixPredictionTechniques[order(dfConfusionMatrixPredictionTechniques$Test_data_accuracy, decreasing=TRUE), ]
 
 # removendo coluna "Mean" foi usada para ordenar os resultados da melhor tecnica
 dfConfusionMatrixPredictionTechniques$Accuracy <- NULL
@@ -1578,14 +1630,38 @@ confusionMatrixPredictionRna$byClass
 # Pegando informacoes para accuracyAndOtherInformationTechniquesPrediction.csv
 #-----------------------------------------------------------------
 dfAccuracyAndOtherInformationPredictionRna <- data.frame(cbind(t(confusionMatrixPredictionRna$overall),t(confusionMatrixPredictionRna$byClass)))
-dfAccuracyAndOtherInformationPredictionSvm <- data.frame(cbind(t(confusionMatrixPredictionSvm$overall),t(confusionMatrixPredictionSvm$byClass)))
-dfAccuracyAndOtherInformationPredictionCart <- data.frame(cbind(t(confusionMatrixPredictionCart$overall),t(confusionMatrixPredictionCart$byClass)))
-dfAccuracyAndOtherInformationpredictionDecisionTrees <- data.frame(cbind(t(confusionMatrixpredictionDecisionTrees$overall),t(confusionMatrixpredictionDecisionTrees$byClass)))
-dfAccuracyAndOtherInformationPredictionRandomForest <- data.frame(cbind(t(confusionMatrixPredictionRandomForest$overall),t(confusionMatrixPredictionRandomForest$byClass)))
-dfAccuracyAndOtherInformationPredictionKnn <- data.frame(cbind(t(confusionMatrixPredictionKnn$overall),t(confusionMatrixPredictionKnn$byClass)))
-dfAccuracyAndOtherInformationPredictionNaiveBayes <- data.frame(cbind(t(confusionMatrixPredictionNaiveBayes$overall),t(confusionMatrixPredictionNaiveBayes$byClass)))
+dfAccuracyAndOtherInformationPredictionRna$Training_data_accuracy <- dfRnaAccuracyOfTrainingData$Mean_Accuracy[1]
+dfAccuracyAndOtherInformationPredictionRna$Runtime_Training <- dfRnaAccuracyOfTrainingData$Runtime_Training[1]
 
-dfAccuracyAndOtherInformationTechniquesPrediction <- rbind(dfAccuracyAndOtherInformationPredictionRna, dfAccuracyAndOtherInformationPredictionSvm, dfAccuracyAndOtherInformationPredictionCart, dfAccuracyAndOtherInformationpredictionDecisionTrees, dfAccuracyAndOtherInformationPredictionRandomForest, dfAccuracyAndOtherInformationPredictionKnn, dfAccuracyAndOtherInformationPredictionNaiveBayes)
+dfAccuracyAndOtherInformationPredictionSvm <- data.frame(cbind(t(confusionMatrixPredictionSvm$overall),t(confusionMatrixPredictionSvm$byClass)))
+dfAccuracyAndOtherInformationPredictionSvm$Training_data_accuracy <- dfSvmAccuracyOfTrainingData$Mean_Accuracy[1]
+dfAccuracyAndOtherInformationPredictionSvm$Runtime_Training <- dfSvmAccuracyOfTrainingData$Runtime_Training[1]
+
+dfAccuracyAndOtherInformationPredictionCart <- data.frame(cbind(t(confusionMatrixPredictionCart$overall),t(confusionMatrixPredictionCart$byClass)))
+dfAccuracyAndOtherInformationPredictionCart$Training_data_accuracy <- dfCartAccuracyOfTrainingData$Mean_Accuracy[1]
+dfAccuracyAndOtherInformationPredictionCart$Runtime_Training <- dfCartAccuracyOfTrainingData$Runtime_Training[1]
+
+dfAccuracyAndOtherInformationPredictionDecisionTrees <- data.frame(cbind(t(confusionMatrixpredictionDecisionTrees$overall),t(confusionMatrixpredictionDecisionTrees$byClass)))
+dfAccuracyAndOtherInformationPredictionDecisionTrees$Training_data_accuracy <- dfDecisionTreesAccuracyOfTrainingData$Mean_Accuracy[1]
+dfAccuracyAndOtherInformationPredictionDecisionTrees$Runtime_Training <- dfDecisionTreesAccuracyOfTrainingData$Runtime_Training[1]
+
+
+dfAccuracyAndOtherInformationPredictionRandomForest <- data.frame(cbind(t(confusionMatrixPredictionRandomForest$overall),t(confusionMatrixPredictionRandomForest$byClass)))
+dfAccuracyAndOtherInformationPredictionRandomForest$Training_data_accuracy <- dfRandomForestAccuracyOfTrainingData$Mean_Accuracy[1]
+dfAccuracyAndOtherInformationPredictionRandomForest$Runtime_Training <- dfRandomForestAccuracyOfTrainingData$Runtime_Training[1]
+
+dfAccuracyAndOtherInformationPredictionKnn <- data.frame(cbind(t(confusionMatrixPredictionKnn$overall),t(confusionMatrixPredictionKnn$byClass)))
+dfAccuracyAndOtherInformationPredictionKnn$Training_data_accuracy <- dfKnnAccuracyOfTrainingData$Mean_Accuracy[1]
+dfAccuracyAndOtherInformationPredictionKnn$Runtime_Training <- dfKnnAccuracyOfTrainingData$Runtime_Training[1]
+
+dfAccuracyAndOtherInformationPredictionNaiveBayes <- data.frame(cbind(t(confusionMatrixPredictionNaiveBayes$overall),t(confusionMatrixPredictionNaiveBayes$byClass)))
+dfAccuracyAndOtherInformationPredictionNaiveBayes$Training_data_accuracy <- dfNaiveBayesAccuracyOfTrainingData$Mean_Accuracy[1]
+dfAccuracyAndOtherInformationPredictionNaiveBayes$Runtime_Training <- dfNaiveBayesAccuracyOfTrainingData$Runtime_Training[1]
+
+View(dfAccuracyAndOtherInformationPredictionNaiveBayes)
+
+# juntando em um unico dataframe os resultados de acuracia e outras estatisicas da analise das tecnicas
+dfAccuracyAndOtherInformationTechniquesPrediction <- rbind(dfAccuracyAndOtherInformationPredictionRna, dfAccuracyAndOtherInformationPredictionSvm, dfAccuracyAndOtherInformationPredictionCart, dfAccuracyAndOtherInformationPredictionDecisionTrees, dfAccuracyAndOtherInformationPredictionRandomForest, dfAccuracyAndOtherInformationPredictionKnn, dfAccuracyAndOtherInformationPredictionNaiveBayes)
 View(dfAccuracyAndOtherInformationTechniquesPrediction)
 
 # Criando coluna Technique
@@ -1620,8 +1696,16 @@ dfAccuracyAndOtherInformationTechniquesPrediction <- addTrainingParameterColumns
 # dfAccuracyAndOtherInformationTechniquesPrediction$Test_samples_Male <- numberOfSamplesMaleTestData
 
 
-# Ordenar linhas com base na coluna Accuracy
-dfAccuracyAndOtherInformationTechniquesPrediction <- dfAccuracyAndOtherInformationTechniquesPrediction[order(dfAccuracyAndOtherInformationTechniquesPrediction$Accuracy, decreasing=TRUE), ]
+# Tirando colunas não usadas para a analise
+dfAccuracyAndOtherInformationTechniquesPredictionNew <- dfAccuracyAndOtherInformationTechniquesPrediction[c(-3,-4,-5,-6,-7,-8, -11, -12, -14, -15, -16, -17, -18, -19)]
+View(dfAccuracyAndOtherInformationTechniquesPredictionNew)
+
+# Mudando nome de algumas colunas
+# Alterando nome das colunas "Min.", "x1st.Qu.", "Median", "Mean", "3rd.Qu." e "Max." para "Min. Accuracy", "1st.Qu. Accuracy", "Median Accuracy", "Mean Accuracy", "3rd.Qu. Accuracy", "Max. Accuracy"
+colnames(dfAccuracyAndOtherInformationTechniquesPredictionNew)[2:5] <- c("Test_data_accuracy", "Test_data_sensitivity", "Test_data_specificity", "Test_data_precision")
+
+# Ordenar linhas com base na coluna Accuracy dos dados de teste
+dfAccuracyAndOtherInformationTechniquesPredictionNew <- dfAccuracyAndOtherInformationTechniquesPredictionNew[order(dfAccuracyAndOtherInformationTechniquesPredictionNew$Test_data_accuracy, decreasing=TRUE), ]
 
 #Adicionando linha Na no dataframe
 #dfAccuracyAndOtherInformationTechniquesPrediction <- addNaLineAtTheEndOfTheDataframe(dfAccuracyAndOtherInformationTechniquesPrediction)
@@ -1630,7 +1714,7 @@ dfAccuracyAndOtherInformationTechniquesPrediction <- dfAccuracyAndOtherInformati
 filePathAccuracyAndOtherInformationTechniquePrediction <- joinPathAndFilename(pathToSaveFile, "accuracyAndOtherInformationTechniquesPrediction.csv")
 
 # Salvando informacoes no arquivo .csv
-createAndUpdateFileCsv(filePathAccuracyAndOtherInformationTechniquePrediction, dfAccuracyAndOtherInformationTechniquesPrediction)
+createAndUpdateFileCsv(filePathAccuracyAndOtherInformationTechniquePrediction, dfAccuracyAndOtherInformationTechniquesPredictionNew)
 
 # Lendo accuracyHitsAndMissesTechnicalPrediction.csv
 dfAccuracyAndOtherInformationTechniquePredictionView <- read.csv(filePathAccuracyAndOtherInformationTechniquePrediction,header=TRUE,encoding="UTF-8")
