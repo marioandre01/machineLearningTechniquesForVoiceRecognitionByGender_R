@@ -188,6 +188,18 @@ addNaLineAtTheEndOfTheDataframe <- function(dataFrame){
   return(dataFrame)
 }
 
+addUnderLineAtTheEndOfTheDataframe <- function(dataFrame){
+  
+  # gerando uma linha com valores nulos
+  rowUnderLine <- seq(1:ncol(dataFrame))
+  rowUnderLine[1:ncol(dataFrame)] <- '-'
+  
+  # adicionando linha nula no final do dataframe
+  dataFrame <- rbind(dataFrame, rowUnderLine) 
+  
+  return(dataFrame)
+}
+
 
 joinPathAndFilename  <- function(filePath, filename){
 
@@ -673,7 +685,7 @@ runtimeTrainingModelNaiveBayes2
 results <- resamples(list("RNA 1 (nnet)"=modelRna1, "RNA 2 (mlp)"=modelRna2, "RNA 3 (mlpML)"=modelRna3, 
                           "SVM 1 (svmRadial)"=modelSvm1,"SVM 2 (svmRadialWeights)"=modelSvm2, "SVM 3 (svmPoly)"= modelSvm3,
                           "CART 1 (rpart)"=modelCart1, "CART 2 (rpart1SE)"=modelCart2, "CART 3 (rpart2)"=modelCart3, 
-                          "Decision Trees 1 (C5.0)"=modelDecisionTrees1, "Decision Trees 1 (C5.0Rules)"=modelDecisionTrees2, "Decision Trees 1 (C5.0Tree)"=modelDecisionTrees3,
+                          "Decision Trees 1 (C5.0)"=modelDecisionTrees1, "Decision Trees 2 (C5.0Rules)"=modelDecisionTrees2, "Decision Trees 3 (C5.0Tree)"=modelDecisionTrees3,
                           "Random Forest 1 (rf)"=modelRandomForest1,"Random Forest 2 (cforest)"=modelRandomForest2, "Random Forest 3 (parRF)"=modelRandomForest3,
                           "k-NN 1 (knn)"=modelKnn1, "k-NN 2 (kknn)"=modelKnn2, 
                           "Naive Bayes 1 (nb)"=modelNaiveBayes1, "Naive Bayes 2 (naive_bayes)"=modelNaiveBayes2
@@ -1521,7 +1533,13 @@ dfConfusionMatrixPredictionRna <- dfConfusionMatrixPredictionTechniqueWithParame
                                                                                             dfRnaAccuracyOfTrainingData)
 #dfConfusionMatrixPredictionRna$Technique <- bestRna
 #dfConfusionMatrixPredictionRna$Test_data_accuracy <- confusionMatrixPredictionRna$overall[1]
+dfConfusionMatrixPredictionRna$Prediction <- as.character(dfConfusionMatrixPredictionRna$Prediction)
+dfConfusionMatrixPredictionRna$Reference <- as.character(dfConfusionMatrixPredictionRna$Reference)
+
+
+dfConfusionMatrixPredictionRna <- addUnderLineAtTheEndOfTheDataframe(dfConfusionMatrixPredictionRna)
 View(dfConfusionMatrixPredictionRna)
+
 
 dfConfusionMatrixPredictionSvm <- dfConfusionMatrixPredictionTechniqueWithParameterColumns2(confusionMatrixPredictionSvm, 
                                                                                             bestSvm,
@@ -1579,7 +1597,7 @@ View(dfConfusionMatrixPredictionTechniques)
 dfConfusionMatrixPredictionTechniques <- dfConfusionMatrixPredictionTechniques[order(dfConfusionMatrixPredictionTechniques$Test_data_accuracy, decreasing=TRUE), ]
 
 # removendo coluna "Mean" foi usada para ordenar os resultados da melhor tecnica
-dfConfusionMatrixPredictionTechniques$Accuracy <- NULL
+#dfConfusionMatrixPredictionTechniques$Accuracy <- NULL
 
 # Adicionando colunas com os prametros usados para o treinamento
 dfConfusionMatrixPredictionTechniques <- addTrainingParameterColumns(dfConfusionMatrixPredictionTechniques, 
@@ -1611,6 +1629,17 @@ dfConfusionMatrixPredictionTechniques <- addTrainingParameterColumns(dfConfusion
 
 # Adicionando linha Na(Not Available) no dataframe
 #dfConfusionMatrixPredictionTechniques <- addNaLineAtTheEndOfTheDataframe(dfConfusionMatrixPredictionTechniques)
+#dfConfusionMatrixPredictionTechniques <- addUnderLineAtTheEndOfTheDataframe(dfConfusionMatrixPredictionTechniques)
+
+# adiconando linhas de separacao
+# gerando uma linha com valores nulos
+
+# rowUnder <- seq(1:ncol(dfConfusionMatrixPredictionTechniques))
+# rowUnder[1:ncol(dfConfusionMatrixPredictionTechniques)] <- '-'
+# View(rowUnder)
+# rowUnder
+# dfConfusionMatrixPredictionTechniques <- dfConfusionMatrixPredictionTechniques %>% add_row(.data = rowUnder, .before = 2)
+# dfConfusionMatrixPredictionTechniques <- dfConfusionMatrixPredictionTechniques %>% add_row(Technique= '-', Prediction= '-', .before = 2)
 
 # Definindo o caminho a ser salvo o arquivo confusionMatrixPredictionTechniques.csv
 filePathTechniquePredictionConfusionMatrix <- joinPathAndFilename(pathToSaveFile, "confusionMatrixPredictionTechniques.csv")
@@ -1641,7 +1670,7 @@ dfAccuracyAndOtherInformationPredictionCart <- data.frame(cbind(t(confusionMatri
 dfAccuracyAndOtherInformationPredictionCart$Training_data_accuracy <- dfCartAccuracyOfTrainingData$Mean_Accuracy[1]
 dfAccuracyAndOtherInformationPredictionCart$Runtime_Training <- dfCartAccuracyOfTrainingData$Runtime_Training[1]
 
-dfAccuracyAndOtherInformationPredictionDecisionTrees <- data.frame(cbind(t(confusionMatrixpredictionDecisionTrees$overall),t(confusionMatrixpredictionDecisionTrees$byClass)))
+dfAccuracyAndOtherInformationPredictionDecisionTrees <- data.frame(cbind(t(confusionMatrixPredictionDecisionTrees$overall),t(confusionMatrixPredictionDecisionTrees$byClass)))
 dfAccuracyAndOtherInformationPredictionDecisionTrees$Training_data_accuracy <- dfDecisionTreesAccuracyOfTrainingData$Mean_Accuracy[1]
 dfAccuracyAndOtherInformationPredictionDecisionTrees$Runtime_Training <- dfDecisionTreesAccuracyOfTrainingData$Runtime_Training[1]
 
