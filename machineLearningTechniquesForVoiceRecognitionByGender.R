@@ -256,7 +256,7 @@ getwd()
 if(.Platform$OS.type == "windows"){
   
   # getwd() - "C:/Users/folder_user/Documents/"
-  pathToSaveFile <- str_c(getwd(), "/machineLearningTechniquesForVoiceRecognitionByGender_R/trainingResults")
+  pathToSaveFile <- str_c(getwd(), "/machineLearningTechniquesForVoiceRecognitionByGender_R/trainingResults/")
   
   # definindo area de trabalho do R no Windows, onde será acessado o dataset para analise
   setwd(str_c(getwd(), "/machineLearningTechniquesForVoiceRecognitionByGender_R"))
@@ -267,7 +267,7 @@ if(.Platform$OS.type == "windows"){
 }else{
   
   # getwd() - "/home/folder_user"
-  pathToSaveFile <- str_c(getwd(), "/machineLearningTechniquesForVoiceRecognitionByGender_R/trainingResults")
+  pathToSaveFile <- str_c(getwd(), "/machineLearningTechniquesForVoiceRecognitionByGender_R/trainingResults/")
   
   # definindo area de trabalho do R no Ubuntu, onde será acessado o dataset para analise
   setwd(str_c(getwd(), "/machineLearningTechniquesForVoiceRecognitionByGender_R"))
