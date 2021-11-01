@@ -255,20 +255,24 @@ getwd()
 # Verifica o sistema operacional que o R está instalado, para definir as variaveis pathToSaveFile e o sistema operacional
 if(.Platform$OS.type == "windows"){
   
-  pathToSaveFile <- "C:/Users/MarioAndre/Documents/"
+  # getwd() - "C:/Users/folder_user/Documents/"
+  pathToSaveFile <- str_c(getwd(), "/machineLearningTechniquesForVoiceRecognitionByGender_R/trainingResults")
   
   # definindo area de trabalho do R no Windows, onde será acessado o dataset para analise
-  setwd("C:/RStudio/datasets")
+  setwd(str_c(getwd(), "/machineLearningTechniquesForVoiceRecognitionByGender_R"))
+ 
   operationalSystem <- "windows"
   
 # senao (se for "unix")
 }else{
   
-  pathToSaveFile <- "/home/marioandre/scripts_R"
+  # getwd() - "/home/folder_user"
+  pathToSaveFile <- str_c(getwd(), "/machineLearningTechniquesForVoiceRecognitionByGender_R/trainingResults")
   
   # definindo area de trabalho do R no Ubuntu, onde será acessado o dataset para analise
-  setwd("/home/marioandre/scripts_R")
-  operationalSystem <- "linux"
+  setwd(str_c(getwd(), "/machineLearningTechniquesForVoiceRecognitionByGender_R"))
+
+  operationalSystem <- "unix"
   
 }
 
