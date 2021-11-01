@@ -287,15 +287,23 @@ nameDatasetCsv <- "gender_voice_dataset.csv"
 
 
 # c(seed, numberOfLines, dataDivisionMethod)
-# analysis1<-c(1243, "all", "createDP")
-analysis1<-c(123, 500, "createDP")
 
-# analysis2<-c(123, 2000, 1)
-# analysis3<-c(123, 1000, 1)
+# Definindo configuração para o treinamento
+analysis1<-c(123, "all", "createDP")
+analysis2<-c(1234, "all", "createDP")
+analysis3<-c(123, "all", "sample-prob")
+analysis4<-c(1234, "all", "sample-prob")
 
 
-analysisList<-list(analysis1)
+# analysis1<-c(123, 2000, "createDP")
+# analysis2<-c(123, 1000, "createDP")
+# analysis3<-c(123, 500, "createDP")
+
+# Juntando configurações escohidas em uma lista
+# analysisList<-list(analysis1)
+# analysisList<-list(analysis1, analysis2)
 # analysisList<-list(analysis1, analysis2, analysis3)
+analysisList<-list(analysis1, analysis2, analysis3, analysis4)
 
 
 # Importando base de dados
