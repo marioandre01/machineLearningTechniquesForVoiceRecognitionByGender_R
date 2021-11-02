@@ -34,6 +34,7 @@ Este projeto está sendo desenvolvido para o trabalho de conclusão de curso (TC
 O projeto foi desenvolvido com as seguintes tecnologias:
 
 - [R](https://www.r-project.org/)
+- [RStudio](https://www.rstudio.com/)
 - [Tidyverse](https://www.tidyverse.org/)
 - [Caret](https://topepo.github.io/caret/)
 <!-- ## 🎨 Layout
@@ -52,6 +53,49 @@ O projeto foi desenvolvido com as seguintes tecnologias:
   <img alt="Move.it mobile" title="Move.it mobile" src="img/onePiece_quiz_tela_mobile.png" width="250px">
 </p> -->
 
+## 💻 Instalando o R e o RStudio
+### No Ubuntu
+### Instalando o R
+```bash
+# update indices
+sudo apt update -qq
+# install two helper packages we need
+sudo apt install --no-install-recommends software-properties-common dirmngr
+# import the signing key (by Michael Rutter) for these repo
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
+# add the R 4.0 repo from CRAN -- adjust 'focal' to 'groovy' or 'bionic' as needed
+sudo add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/"
+
+sudo apt update
+
+sudo apt install --no-install-recommends r-base
+
+# Verificar se o R foi instalado
+R --version
+```
+### Instalando r-base-dev
+```bash
+sudo apt install r-base-dev
+```
+
+### Instalando pacotes não-R requeridos pela biblioteca Tidyverse
+```bash
+sudo apt install libcurl4-openssl-dev libssl-dev libxml2-dev
+```
+
+### Instalando RStudio
+Baixar o **.deb** pelo link: [https://www.rstudio.com/products/rstudio/download/#download](https://www.rstudio.com/products/rstudio/download/#download) e instalar pelo modo gráfico
+
+### No Windows
+### Instalando o R
+Ir nesse link [https://cran.fiocruz.br/](https://cran.fiocruz.br/) e clicar no link **Download R for Windows**, esperar baixar o executável e então iniciar a instalação pelo modo gráfico.
+
+### Instalando o Rtools
+Ir nesse link [https://cran.r-project.org/bin/windows/Rtools/](https://cran.r-project.org/bin/windows/Rtools/) e clicar no link **rtools40v2-x86_64.exe**, esperar baixar o executável e então iniciar a instalação pelo modo gráfico.
+
+### Instalando o RStudio
+Baixar o **.exe** pelo link: [RStudio - Download](https://www.rstudio.com/products/rstudio/download/#download) e instalar pelo modo gráfico
+
 ## 💻 Executando a aplicação
 
 ### :octocat: Clonando o Repositório
@@ -66,7 +110,11 @@ $ cd machineLearningTechniquesForVoiceRecognitionByGender_R
 
 Abra o programa **R** e selecione o script **machineLearningTechniquesForVoiceRecognitionByGender.R**
 
-Com ele aberto vá na janela onde está o script e clique nela e aperte **Ctrl + A** para selecionar todo o código e em seguida aperte **Ctrl + ENTER** para o código ser executado. Aguarde a execução terminar para ver os resultados da analise.
+Com ele aberto vá na janela onde está o script e clique nela e aperte **Ctrl + A** para selecionar todo o código e em seguida aperte **Ctrl + ENTER** para o código ser executado. Aguarde a execução terminar para ver os resultados da análise.
+
+Os resultados serão salvos na pasta **trainingResults**
+
+Para ver os resultados depois que ja se tenha feito o treino, usar o arquivo **viewResultsMachineLearningTechniquesForVoiceRecognitionByGender.R**
 
 
 ## :gear: Contribuição
