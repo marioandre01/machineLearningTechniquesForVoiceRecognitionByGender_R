@@ -256,10 +256,12 @@ getwd()
 if(.Platform$OS.type == "windows"){
   
   # getwd() - "C:/Users/folder_user/Documents/"
-  pathToSaveFile <- str_c(getwd(), "/machineLearningTechniquesForVoiceRecognitionByGender_R/trainingResults/")
+  pathToSaveFile <- str_c(getwd(), "/")
+  # pathToSaveFile <- str_c(getwd(), "/machineLearningTechniquesForVoiceRecognitionByGender_R/trainingResults/")
   
   # definindo area de trabalho do R no Windows, onde será acessado o dataset para analise
-  setwd(str_c(getwd(), "/machineLearningTechniquesForVoiceRecognitionByGender_R"))
+  setwd("C:/RStudio/datasets")
+  # setwd(str_c(getwd(), "/machineLearningTechniquesForVoiceRecognitionByGender_R"))
  
   operationalSystem <- "windows"
   
@@ -293,21 +295,22 @@ nameDatasetCsv <- "gender_voice_dataset.csv"
 # c(seed, numberOfLines, dataDivisionMethod)
 
 # Definindo configuração para o treinamento
-analysis1<-c(123, "all", "createDP")
-analysis2<-c(1234, "all", "createDP")
-analysis3<-c(123, "all", "sample-prob")
-analysis4<-c(1234, "all", "sample-prob")
+# analysis1<-c(123, "all", "createDP")
+# analysis2<-c(1234, "all", "createDP")
+# analysis3<-c(123, "all", "sample-prob")
+# analysis4<-c(1234, "all", "sample-prob")
 
 
 # analysis1<-c(123, 2000, "createDP")
 # analysis2<-c(123, 1000, "createDP")
-# analysis3<-c(123, 500, "createDP")
+analysis1<-c(123, 500, "createDP")
+analysis2<-c(123, 500, "createDP")
 
 # Juntando configurações escohidas em uma lista
 # analysisList<-list(analysis1)
-# analysisList<-list(analysis1, analysis2)
+analysisList<-list(analysis1, analysis2)
 # analysisList<-list(analysis1, analysis2, analysis3)
-analysisList<-list(analysis1, analysis2, analysis3, analysis4)
+# analysisList<-list(analysis1, analysis2, analysis3, analysis4)
 
 
 # Importando base de dados
@@ -319,6 +322,8 @@ if (file.exists(nameDatasetCsv)){
 
   for(i in 1:length(analysisList)) {
  
+    startTimeAnalyzeTraining <- Sys.time()
+    
     seed <- as.numeric(analysisList[[i]][1])
     numberOfLines <- analysisList[[i]][2]
     dataDivisionMethod <- analysisList[[i]][3]
@@ -400,6 +405,12 @@ if (file.exists(nameDatasetCsv)){
       dataFrame$Test_samples_Male <- numberOfSamplesMaleTestData
       dataFrame$Operational_System <- operationalSystem
       
+      return(dataFrame)
+    }
+    
+    
+    configureDataFrame  <- function(dataFrame){
+      
       # Mudando o nome das linhas do data frame, tira o nome das tecnicas e coloca o numero da linha
       rownames(dataFrame) <- 1:nrow(dataFrame)
       
@@ -409,7 +420,7 @@ if (file.exists(nameDatasetCsv)){
       # chamando funcao para adicionar uma linha Na(Not Available) no dataframe
       dataFrame <- addNaLineAtTheEndOfTheDataframe(dataFrame)
       
-      return(dataFrame)
+      return(dataFrame) 
     }
     
     # Funcao para adicionar colunas com parametros da analise de matriz de confusao
@@ -465,6 +476,14 @@ if (file.exists(nameDatasetCsv)){
       #alterando ordem das colunas do dataframe, a coluna "Technique" e colocada como primeira coluna
       dataFrame <- dataFrame %>% select(Technique, everything())
       
+      return(dataFrame)
+    }
+    
+    
+    timeExecutionAnalysisTraining <- function(analysis, startDatetime, endDatetime, runtime){
+      
+      dataFrame <- data.frame("Analysis"=analysis, "Start_datetime_analysis"=startDatetime, "End_datetime_analysis"=endDatetime, "Runtime_analysis"=runtime)
+
       return(dataFrame)
     }
     
@@ -795,6 +814,9 @@ if (file.exists(nameDatasetCsv)){
                                                                       numberOfSamplesMaleTestData, 
                                                                       operationalSystem)
     
+    
+    dfAccuracyOfTrainingDataTechniques <- configureDataFrame(dfAccuracyOfTrainingDataTechniques)
+      
     #dfAccuracyOfTrainingDataTechniques$Seed <- seed
     #dfAccuracyOfTrainingDataTechniques$Samples <- nrow(dfGenderVoice)
     #dfAccuracyOfTrainingDataTechniques$Female_samples <- numberOfFemaleClassSamples
@@ -1454,6 +1476,7 @@ if (file.exists(nameDatasetCsv)){
                                                                       numberOfSamplesMaleTestData, 
                                                                       operationalSystem)
     
+    dfConfusionMatrixTechnicalPredictionWithTable <- configureDataFrame(dfConfusionMatrixTechnicalPredictionWithTable)
     
     # dfConfusionMatrixTechnicalPredictionWithTable$Seed <- seed
     # dfConfusionMatrixTechnicalPredictionWithTable$Samples <- nrow(dfGenderVoice)
@@ -1508,6 +1531,8 @@ if (file.exists(nameDatasetCsv)){
                                                                                  numberOfSamplesMaleTestData, 
                                                                                  operationalSystem)
     
+    
+    dfAccuracyAndErrorRateTechnicalPrediction <- configureDataFrame(dfAccuracyAndErrorRateTechnicalPrediction)
     
     # # Crinado nova colunas no dataframe
     # dfAccuracyAndErrorRateTechnicalPrediction$Seed <- seed
@@ -1668,6 +1693,8 @@ if (file.exists(nameDatasetCsv)){
                                                                              numberOfSamplesMaleTestData, 
                                                                              operationalSystem)
     
+    dfConfusionMatrixPredictionTechniques <- configureDataFrame(dfConfusionMatrixPredictionTechniques)
+    
     # Crinado nova colunas no dataframe
     # dfConfusionMatrixPredictionTechniques$Seed <- seed
     # dfConfusionMatrixPredictionTechniques$Samples <- nrow(dfGenderVoice)
@@ -1782,6 +1809,8 @@ if (file.exists(nameDatasetCsv)){
                                                                          numberOfSamplesMaleTestData, 
                                                                          operationalSystem)
     
+    dfAccuracyAndOtherInformationTechniquesPrediction <- configureDataFrame(dfAccuracyAndOtherInformationTechniquesPrediction)
+    
     # Crinado nova colunas no dataframe
     # dfAccuracyAndOtherInformationTechniquesPrediction$Seed <- seed
     # dfAccuracyAndOtherInformationTechniquesPrediction$Samples <- nrow(dfGenderVoice)
@@ -1832,12 +1861,42 @@ if (file.exists(nameDatasetCsv)){
     # ggplot(varImp(modelKnn2))
     # ggplot(varImp(modelNaiveBayes2))
     
+    endTimeAnalyzeTraining <- Sys.time()
+    runtimeAnalyzeTraining <- runtime(endTimeAnalyzeTraining, startTimeAnalyzeTraining)
+    
+    dftimeExecutionAnalysisTraining <- timeExecutionAnalysisTraining(str_c("Analysis Training ", i), startTimeAnalyzeTraining, endTimeAnalyzeTraining, runtimeAnalyzeTraining)
+    
+    # View(dftimeExecutionAnalysisTraining)
+    
+    dftimeExecutionAnalysisTraining <- addTrainingParameterColumns(dftimeExecutionAnalysisTraining, 
+                                                                                     seed, 
+                                                                                     dfGenderVoice, 
+                                                                                     numberOfFemaleClassSamples, 
+                                                                                     numberOfMaleClassSamples, 
+                                                                                     dataDivisionMethod, 
+                                                                                     trainingData, 
+                                                                                     numberOfSamplesFemaleTrainingData, 
+                                                                                     numberOfSamplesMaleTrainingData, 
+                                                                                     testData, 
+                                                                                     numberOfSamplesFemaleTestData, 
+                                                                                     numberOfSamplesMaleTestData, 
+                                                                                     operationalSystem)
+    
+    # Definindo o caminho a ser salvo o arquivo timeExecutionAnalysisTraining.csv
+    filePathTimeExecutionAnalysisTraining <- joinPathAndFilename(pathToSaveFile, "timeExecutionAnalysisTraining.csv")
+
+    # Salvando informacoes no arquivo .csv
+    createAndUpdateFileCsv(filePathTimeExecutionAnalysisTraining, dftimeExecutionAnalysisTraining)
+    
+    # Lendo timeExecutionAnalysisTraining.csv
+    dftimeExecutionAnalysisTrainingView <- read.csv(filePathTimeExecutionAnalysisTraining,header=TRUE,encoding="UTF-8")
+    view(dftimeExecutionAnalysisTrainingView)
+    
   }
 
 } else {
   cat("Arquivo .csv nao existe!")
 }
-
 
 
 
