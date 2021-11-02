@@ -255,13 +255,10 @@ getwd()
 # Verifica o sistema operacional que o R está instalado, para definir as variaveis pathToSaveFile e o sistema operacional
 if(.Platform$OS.type == "windows"){
   
-  # getwd() - "C:/Users/folder_user/Documents/"
-  pathToSaveFile <- str_c(getwd(), "/")
-  # pathToSaveFile <- str_c(getwd(), "/machineLearningTechniquesForVoiceRecognitionByGender_R/trainingResults/")
+  pathToSaveFile <- str_c(getwd(), "/machineLearningTechniquesForVoiceRecognitionByGender_R/trainingResults/")
   
   # definindo area de trabalho do R no Windows, onde será acessado o dataset para analise
-  setwd("C:/RStudio/datasets")
-  # setwd(str_c(getwd(), "/machineLearningTechniquesForVoiceRecognitionByGender_R"))
+  setwd(str_c(getwd(), "/machineLearningTechniquesForVoiceRecognitionByGender_R"))
  
   operationalSystem <- "windows"
   
@@ -301,15 +298,15 @@ nameDatasetCsv <- "gender_voice_dataset.csv"
 # analysis4<-c(1234, "all", "sample-prob")
 
 
-# analysis1<-c(123, 2000, "createDP")
-# analysis2<-c(123, 1000, "createDP")
-analysis1<-c(123, 500, "createDP")
-analysis2<-c(123, 500, "createDP")
+analysis1<-c(123, 2000, "createDP")
+analysis2<-c(123, 1000, "createDP")
+analysis3<-c(123, 500, "createDP")
+# analysis2<-c(123, 500, "createDP")
 
 # Juntando configurações escohidas em uma lista
 # analysisList<-list(analysis1)
-analysisList<-list(analysis1, analysis2)
-# analysisList<-list(analysis1, analysis2, analysis3)
+# analysisList<-list(analysis1, analysis2)
+analysisList<-list(analysis1, analysis2, analysis3)
 # analysisList<-list(analysis1, analysis2, analysis3, analysis4)
 
 
