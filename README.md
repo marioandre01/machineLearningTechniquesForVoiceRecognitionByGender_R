@@ -108,7 +108,7 @@ $ cd machineLearningTechniquesForVoiceRecognitionByGender_R
 ```
 ### 💻 Executando o script
 
-Abra o programa **R** e selecione o script **machineLearningTechniquesForVoiceRecognitionByGender.R**
+Abra o programa **RStudio** e selecione o script **machineLearningTechniquesForVoiceRecognitionByGender.R**
 
 Com ele aberto vá na janela onde está o script e clique nela e aperte **Ctrl + A** para selecionar todo o código e em seguida aperte **Ctrl + ENTER** para o código ser executado. Aguarde a execução terminar para ver os resultados da análise.
 
