@@ -284,36 +284,30 @@ getwd()
 nameDatasetCsv <- "gender_voice_dataset.csv"
 
 
-# aqui colocar o numero de amostra para se pegar das amostras de Male e Female
-# O numero total de amostras  e o dobro de numberOfLines
-# numberOfLines <- 'all'
+# Definindo configuração para o treinamento - (seed, numberOfLines, dataDivisionMethod)
 
-
-# c(seed, numberOfLines, dataDivisionMethod)
-
-# Definindo configuração para o treinamento
-# analysis1<-c(123, "all", "createDP")
+analysis1<-c(123, "all", "createDP")
 # analysis2<-c(1234, "all", "createDP")
 # analysis3<-c(123, "all", "sample-prob")
 # analysis4<-c(1234, "all", "sample-prob")
 
 
-analysis1<-c(123, 2000, "createDP")
-analysis2<-c(123, 1000, "createDP")
-analysis3<-c(123, 500, "createDP")
-# analysis2<-c(123, 500, "createDP")
+# analysis1<-c(123, 2000, "createDP")
+# analysis2<-c(123, 1000, "createDP")
+# analysis3<-c(123, 500, "createDP")
+
 
 # Juntando configurações escohidas em uma lista
-# analysisList<-list(analysis1)
+analysisList<-list(analysis1)
 # analysisList<-list(analysis1, analysis2)
-analysisList<-list(analysis1, analysis2, analysis3)
+# analysisList<-list(analysis1, analysis2, analysis3)
 # analysisList<-list(analysis1, analysis2, analysis3, analysis4)
 
-
-# Importando base de dados
-# Se for mudar o numero de amostras do dataset para um valor especifico, usar o trecho de código abaixo
 #-----------------------------------------------------------------------------------------------
 
+
+# Configuração das amostras usadas, treinamento das tecnicas escolhidas e resultados
+# ----------------------------------------------------------------------------------------------
 
 if (file.exists(nameDatasetCsv)){
 

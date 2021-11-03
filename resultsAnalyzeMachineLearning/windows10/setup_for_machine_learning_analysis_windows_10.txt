@@ -1,0 +1,11 @@
+## Setup for machine learning analysis ##
+--------------------------------------------------------
+
+Computer: Notebook Acer Nitro 5
+Processor: Intel(R) Core(TM) i5-9300H CPU @ 2.40GHz
+RAM memory: 8 GB
+Operational System: Windows 10 Home
+RStudio: Version 1.4.1106 64-bit
+Software R: R x64 4.0.4
+
+--------------------------------------------------------
