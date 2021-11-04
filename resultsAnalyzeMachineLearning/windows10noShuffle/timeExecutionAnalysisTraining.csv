@@ -1,0 +1,8 @@
+"Analysis","Start_datetime_analysis","End_datetime_analysis","Runtime_analysis","Seed","Samples","Female_samples","Male_samples","Data_division_method","Training_samples_80p","Training_samples_Female","Training_samples_Male","Test_samples_20p","Test_samples_Female","Test_samples_Male","Operational_System"
+"Analysis Training 1",2021-11-02 11:19:35,2021-11-02 11:51:32,00:31:58,123,3168,1584,1584,"createDP",2536,1268,1268,632,316,316,"windows"
+"Analysis Training 2",2021-11-02 11:51:32,2021-11-02 12:22:02,00:30:30,1234,3168,1584,1584,"createDP",2536,1268,1268,632,316,316,"windows"
+"Analysis Training 3",2021-11-02 12:22:02,2021-11-02 12:52:56,00:30:54,123,3168,1584,1584,"sample-prob",2539,1262,1277,629,322,307,"windows"
+"Analysis Training 4",2021-11-02 12:52:56,2021-11-02 13:23:40,00:30:44,1234,3168,1584,1584,"sample-prob",2531,1262,1269,637,322,315,"windows"
+"Analysis Training 5",2021-11-02 13:30:59,2021-11-02 13:46:42,00:15:43,123,2000,1000,1000,"createDP",1600,800,800,400,200,200,"windows"
+"Analysis Training 6",2021-11-02 13:46:42,2021-11-02 13:52:40,00:05:57,123,1000,500,500,"createDP",800,400,400,200,100,100,"windows"
+"Analysis Training 7",2021-11-02 13:52:40,2021-11-02 13:55:24,00:02:44,123,500,250,250,"createDP",400,200,200,100,50,50,"windows"

@@ -1,0 +1,11 @@
+## Setup for machine learning analysis ##
+--------------------------------------------------------
+
+Computer: Notebook Dell Inspiron 3583
+Processor: Intel(R) Core(TM) i5-8265U CPU @ 1.60GHz x 8
+RAM memory: 8 GB
+Operational System: Ubuntu 20.04.2 LTS 64-bit
+RStudio: 2021.09.0 Build 351 64-bit
+Software R: R x64 4.1.1
+
+--------------------------------------------------------
