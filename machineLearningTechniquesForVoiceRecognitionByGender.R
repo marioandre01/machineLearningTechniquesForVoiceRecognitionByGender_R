@@ -524,9 +524,15 @@ if (file.exists(nameDatasetCsv)){
       # pega todas as linhas que está definida em "trainingDataIndex", as amostras serão selecionas pelos indices passados
       trainingData <- dfGenderVoice[ trainingDataIndex, ]
       
+      # Embaralhando as linhas das amostras de treino
+      trainingData <- trainingData[sample(nrow(trainingData)),]
+      
       
       # pega todas as linhas que não está definida em "trainingDataIndex", o sinal de - (menos) diz pra não pegar essas linhas
       testData  <- dfGenderVoice[-trainingDataIndex, ]
+      
+      # Embaralhando as linhas das amostras de teste
+      testData <- testData[sample(nrow(testData)),]
     } else {
       # Modo 2 - dataDivisionMethod <- "sample-prob"
       #-----------------------------------------------------------------------------------------------
@@ -534,7 +540,14 @@ if (file.exists(nameDatasetCsv)){
     
       ## Dividindo dados para treino e para teste
       trainingData <- dfGenderVoice[grupos==1,]
+      
+      # Embaralhando as linhas das amostras de treino
+      trainingData <- trainingData[sample(nrow(trainingData)),]
+      
       testData <- dfGenderVoice[grupos==2,]
+      
+      # Embaralhando as linhas das amostras de teste
+      testData <- testData[sample(nrow(testData)),]
     
     }
     
