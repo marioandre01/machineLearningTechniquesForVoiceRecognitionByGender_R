@@ -284,7 +284,7 @@ getwd()
 nameDatasetCsv <- "gender_voice_dataset.csv"
 
 
-# Definindo configuração para o treinamento - (seed, numberOfLines, dataDivisionMethod)
+# Definindo configurações para o treinamento - (seed, numberOfLines, dataDivisionMethod)
 
 analysis1<-c(123, "all", "createDP")
 # analysis2<-c(1234, "all", "createDP")

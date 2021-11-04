@@ -122,9 +122,12 @@ A variável **dataDivisionMethod** é usada para escolher o método usado para d
 
 Por configuração padrão no código, a análise de aprendizado de máquina feito para as técnicas selecionadas, será feita com a configuração **seed=123, numberOfLines="all" e dataDivisionMethod="createDP"**. Com isso só se tem um vetor na lista, e assim só uma análise será feita.
 
-Os resultados serão salvos na pasta **trainingResults**
+Os resultados serão salvos na pasta **trainingResults**.
 
 Para ver os resultados depois que já se tenha feito uma análise, usar o arquivo **viewResultsMachineLearningTechniquesForVoiceRecognitionByGender.R**. Os resultados serão mostrados no RStudio.
+
+**OBS:**
+Depois que foi feita a primeira análise de aprendizado de máquina seguindo os passos de ir na janela onde está o script e clicar nela e apertar **Ctrl + A** para selecionar todo o código e em seguida apertar **Ctrl + ENTER** para o código ser executado. Caso se deseje fazer outras análise, alterando os valores dos vetores que serão colocados na lista, é necessário iniciar a execução do código não mais selecionando todo o código, mas sim a partir do trecho de código que tem o comentário **"# Definindo configurações para o treinamento - (seed, numberOfLines, dataDivisionMethod)"**. A execução deve-se ser realizada a partir desse ponto, pois acima desse ponto já foi configurado a pastas onde será lido o dataset, e onde será salvo os resultados da análise. Dessa forma, caso se selecione novamente o código todo para ser executado, o caminhos das pastas serão alterados, resultando em erro na execução.
 
 
 ## :gear: Contribuição
