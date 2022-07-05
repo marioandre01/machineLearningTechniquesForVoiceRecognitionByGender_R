@@ -23,20 +23,25 @@
 
 ## 💻 Projeto
 
-Este projeto está sendo desenvolvido para o trabalho de conclusão de curso (TCC) para o [Instituto Federal de Educação, Ciência e Tecnologia de Santa Catarina - Câmpus São José (IFSC-SJ)](https://www.ifsc.edu.br/web/campus-sao-jose). O tema do projeto foi definido como **Desempenho de técnicas de Aprendizado de Máquina em Reconhecimento de Voz para detecção de gênero**. Tendo como objetivo verificar o desempenho de 6 técnicas de aprendizado de máquina mais conhecidas e usadas no ramo de análise de dados, sendo elas **Redes Neurais Artificiais (RNA), Máquinas de vetores de suporte (SVM), Arvores de decisão (DT), Floresta aleatória (Random Forest), Naive Bayes e K-Vizinhos mais próximos (KNN)** para o reconhecimento de voz com foco na detecção de gênero (Feminino e Masculino). Para análise foi definido o dataset [Gender voice](https://www.apispreadsheets.com/datasets/119) adquirido no site **apispreadsheets.com**.
+Este projeto foi desenvolvido para o trabalho de conclusão de curso (TCC) do curso de Engenharia de Telecomunicações do [Instituto Federal de Educação, Ciência e Tecnologia de Santa Catarina - Câmpus São José (IFSC-SJ)](https://www.ifsc.edu.br/web/campus-sao-jose). O tema do projeto foi definido como **Desempenho de técnicas de aprendizado de máquina em reconhecimento de voz para detecção de gênero biológico**. Tendo como proposta um estudo para verificar o desempenho de técnicas de aprendizado de máquina pré-selecionadas, sendo elas **Artificial Neural Networks (ANN)**, **Support Vector Machines (SVM)**, **Random Forest (RF)**, **Decision Trees (DT)**, **Naive Bayes (NB)** e **K-Nearest Neighbors (K-NN)**, para o reconhecimento do gênero de vozes biológicas (feminino e masculino), com o objetivo de determinar qual delas tem a melhor performance, para servir como informação avaliativa de escolha no uso de aplicações que necessitem utilizar esse recurso. Deste modo, o desenvolvedor que implementar este recurso já vai saber qual técnica usar, não precisando fazer testes nessa etapa do processo. Para o desenvolvimento da análise foi utilizado o dataset [Gender
+Recognition by Voice](https://data.world/ml-research/gender-recognition-by-voice) adquirido no site **data.world**.
 
 <!-- O resultado da aplicação pode ser acessado através da seguinte URL: 
 [https://machineLearningTechniquesForVoiceRecognitionByGender_R.vercel.app/](https://machineLearningTechniquesForVoiceRecognitionByGender_R.vercel.app/) -->
 
 
-## 📋 Tecnologias
+## 📋 Principais tecnologias utilizadas
 
 O projeto foi desenvolvido com as seguintes tecnologias:
 
 - [R](https://www.r-project.org/)
 - [RStudio](https://www.rstudio.com/)
 - [Tidyverse](https://www.tidyverse.org/)
+  - ggplot()
 - [Caret](https://topepo.github.io/caret/)
+  - createDataPartition()
+  - train() 
+  - trainControl()
 <!-- ## 🎨 Layout
 
 ### 💻 Web 
@@ -120,9 +125,15 @@ A variável **numberOfLines** é usada para se escolher o número de amostras us
 
 A variável **dataDivisionMethod** é usada para escolher o método usado para dividir os dados de treino e os dados de teste. Foi determinado dois métodos, sendo eles **"createDP"** e **"sample-prob"**. O valor **"createDP"** define que a divisão será feita usando a função **createDataPartition()** da biblioteca **caret**. Já o valor **"sample-prob"** determina que a divisão será feita usando a função **sample()** nativa do R. O método escolhido para a análise é o **"createDP"** pois divide os dados de treino e teste igualmente. A opção **sample()** foi inserida pois ela foi usada nos testes iniciais para a divisão das amostras, mas ela não divide igualmente os dados para os dados de treino e teste, e com isso esse método foi colocado para ver se o resultado das análises de aprendizado de máquina das técnicas escolhidas resultava em valores diferentes.
 
-Por configuração padrão no código, a análise de aprendizado de máquina feito para as técnicas selecionadas, será feita com a configuração **seed=123, numberOfLines="all" e dataDivisionMethod="createDP"**. Com isso só se tem um vetor na lista, e assim só uma análise será feita.
+Por configuração padrão no código, a análise de aprendizado de máquina com as técnicas selecionadas, foi feita com a seguinte configuração:
 
-Os resultados serão salvos na pasta **trainingResults**.
+seed | numberOfLines | dataDivisionMethod
+:--: | :-----------: | :----------------:
+123  | all           | createDP
+
+Com isso, só se teve um vetor na lista e assim só uma análise foi feita.
+
+Os resultados da análise foram salvos na pasta **trainingResults**.
 
 Para ver os resultados depois que já se tenha feito uma análise, usar o arquivo **viewResultsMachineLearningTechniquesForVoiceRecognitionByGender.R**. Os resultados serão mostrados no RStudio.
 
