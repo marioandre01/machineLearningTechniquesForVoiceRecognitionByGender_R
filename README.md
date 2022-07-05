@@ -24,7 +24,8 @@
 ## 💻 Projeto
 
 Este projeto foi desenvolvido para o trabalho de conclusão de curso (TCC) do curso de Engenharia de Telecomunicações do [Instituto Federal de Educação, Ciência e Tecnologia de Santa Catarina - Câmpus São José (IFSC-SJ)](https://www.ifsc.edu.br/web/campus-sao-jose). O tema do projeto foi definido como **Desempenho de técnicas de aprendizado de máquina em reconhecimento de voz para detecção de gênero biológico**. Tendo como proposta um estudo para verificar o desempenho de técnicas de aprendizado de máquina pré-selecionadas, sendo elas **Artificial Neural Networks (ANN)**, **Support Vector Machines (SVM)**, **Random Forest (RF)**, **Decision Trees (DT)**, **Naive Bayes (NB)** e **K-Nearest Neighbors (K-NN)**, para o reconhecimento do gênero de vozes biológicas (feminino e masculino), com o objetivo de determinar qual delas tem a melhor performance, para servir como informação avaliativa de escolha no uso de aplicações que necessitem utilizar esse recurso. Deste modo, o desenvolvedor que implementar este recurso já vai saber qual técnica usar, não precisando fazer testes nessa etapa do processo. Para o desenvolvimento da análise foi utilizado o dataset [Gender
-Recognition by Voice](https://data.world/ml-research/gender-recognition-by-voice) adquirido no site **data.world**.
+Recognition by Voice](https://data.world/ml-research/gender-recognition-by-voice) adquirido no site [data.world](https://data.world), e os resultados obtidos foram avaliados em termos de acurácia,
+sensibilidade, especificidade e eficiência.
 
 <!-- O resultado da aplicação pode ser acessado através da seguinte URL: 
 [https://machineLearningTechniquesForVoiceRecognitionByGender_R.vercel.app/](https://machineLearningTechniquesForVoiceRecognitionByGender_R.vercel.app/) -->
